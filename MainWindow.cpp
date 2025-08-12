@@ -46,6 +46,9 @@ MainWindow::MainWindow()
 	// Create the card view
 	fCardView = new CardView(Bounds());
 	
+	// Set resizing mode to follow window size changes
+	fCardView->SetResizingMode(B_FOLLOW_ALL_SIDES);
+	
 	// Create the presenter
 	fCardPresenter = new CardPresenter(fCardModel, fCardView);
 	
@@ -84,6 +87,18 @@ MainWindow::MessageReceived(BMessage* message)
 			BWindow::MessageReceived(message);
 			break;
 		}
+	}
+}
+
+
+void
+MainWindow::FrameResized(float width, float height)
+{
+	BWindow::FrameResized(width, height);
+	
+	// Explicitly tell the card view to relayout
+	if (fCardView) {
+		fCardView->RefreshLayout();
 	}
 }
 

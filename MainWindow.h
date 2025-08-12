@@ -16,13 +16,14 @@ class CardPresenter;
 class MainWindow : public BWindow
 {
 public:
-						MainWindow();
-	virtual				~MainWindow();
+					MainWindow();
+	virtual			~MainWindow();
 
-			void		MessageReceived(BMessage* msg);
-			bool		QuitRequested();
+			void			MessageReceived(BMessage* msg);
+			bool			QuitRequested();
+			void			FrameResized(float width, float height);
 			
-			void		LoadSpread();
+			void			LoadSpread();
 
 private:
 			CardModel*		fCardModel;

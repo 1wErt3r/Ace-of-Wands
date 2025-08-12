@@ -20,8 +20,8 @@ struct CardDisplay {
 
 class CardView : public BView {
 public:
-							CardView(BRect frame);
-	virtual					~CardView();
+					CardView(BRect frame);
+	virtual			~CardView();
 
 	virtual	void			AttachedToWindow();
 	virtual	void			Draw(BRect updateRect);
@@ -29,6 +29,7 @@ public:
 
 			void			DisplayCards(const std::vector<class CardInfo>& cards);
 			void			ClearCards();
+			void			RefreshLayout();
 
 private:
 			void			LayoutCards();
