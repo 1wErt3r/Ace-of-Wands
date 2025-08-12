@@ -14,17 +14,26 @@
 #include <LayoutBuilder.h>
 #include <String.h>
 #include <View.h>
+#include <MenuBar.h>
+#include <Menu.h>
+#include <MenuItem.h>
 #include <stdio.h>
+
+const uint32 kMsgNewReading = 'NEW_';
 
 
 MainWindow::MainWindow()
 	:
 	BWindow(BRect(100, 100, 900, 700), "Tarot Card Reader", B_TITLED_WINDOW,
 		B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
+	fMenuBar(NULL),
 	fCardModel(NULL),
 	fCardView(NULL),
 	fCardPresenter(NULL)
 {
+	// Create menu bar
+	_CreateMenuBar();
+	
 	// Create the card model
 	fCardModel = new CardModel();
 	
@@ -52,8 +61,10 @@ MainWindow::MainWindow()
 	// Create the presenter
 	fCardPresenter = new CardPresenter(fCardModel, fCardView);
 	
-	// Add the card view to the window
-	AddChild(fCardView);
+	// Use layout builder to arrange menu bar and card view
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.Add(fMenuBar)
+		.Add(fCardView);
 	
 	// Load initial spread
 	LoadSpread();
@@ -82,6 +93,10 @@ void
 MainWindow::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
+		case kMsgNewReading:
+			LoadSpread();
+			break;
+			
 		default:
 		{
 			BWindow::MessageReceived(message);
@@ -117,6 +132,21 @@ MainWindow::LoadSpread()
 	if (fCardPresenter) {
 		fCardPresenter->LoadThreeCardSpread();
 	}
+}
+
+
+void
+MainWindow::_CreateMenuBar()
+{
+	fMenuBar = new BMenuBar("MenuBar");
+	
+	// Create File menu
+	BMenu* fileMenu = new BMenu("File");
+	fileMenu->AddItem(new BMenuItem("New Reading", new BMessage(kMsgNewReading), 'N'));
+	fileMenu->AddSeparatorItem();
+	fileMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
+	
+	fMenuBar->AddItem(fileMenu);
 }
 
 

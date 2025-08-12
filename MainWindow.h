@@ -5,10 +5,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
 #include <Window.h>
 
-
+class BMenuBar;
 class CardModel;
 class CardView;
 class CardPresenter;
@@ -19,16 +18,19 @@ public:
 					MainWindow();
 	virtual			~MainWindow();
 
-			void			MessageReceived(BMessage* msg);
-			bool			QuitRequested();
-			void			FrameResized(float width, float height);
-			
-			void			LoadSpread();
+		void		MessageReceived(BMessage* msg);
+		bool		QuitRequested();
+		void		FrameResized(float width, float height);
+		
+		void		LoadSpread();
 
 private:
-			CardModel*		fCardModel;
-			CardView*		fCardView;
-			CardPresenter*	fCardPresenter;
+		void		_CreateMenuBar();
+		
+		BMenuBar*		fMenuBar;
+		CardModel*		fCardModel;
+		CardView*		fCardView;
+		CardPresenter*	fCardPresenter;
 };
 
 #endif // MAINWINDOW_H
