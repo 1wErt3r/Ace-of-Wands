@@ -1,0 +1,39 @@
+# Haiku specific files
+*.o
+*.a
+*.so
+*.dll
+*.exe
+objects.x86_64-cc13-release/
+
+# Build artifacts
+MyApp
+*.rsrc
+*.catalog
+
+# Editor files
+.genio
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+\#*\#
+
+# Debug files
+*.debug
+core
+core.*
+
+# IDE files
+.vscode/
+.idea/
+*.user
+*.pro.user
+
+# Git files
+.git/
