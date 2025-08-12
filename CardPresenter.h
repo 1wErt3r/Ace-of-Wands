@@ -6,6 +6,8 @@
 #define CARDPRESENTER_H
 
 #include <vector>
+#include <thread>
+#include <future>
 #include "CardModel.h"
 
 class CardView;
@@ -20,6 +22,7 @@ public:
 private:
 		CardModel*		fModel;
 		CardView*		fView;
+		std::future<void> fReadingFuture;
 };
 
 #endif // CARDPRESENTER_H

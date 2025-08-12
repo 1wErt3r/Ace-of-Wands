@@ -7,6 +7,8 @@
 #include "CardView.h"
 #include "AIReading.h"
 #include <stdio.h>
+#include <thread>
+#include <chrono>
 
 CardPresenter::CardPresenter(CardModel* model, CardView* view)
 	:
@@ -18,6 +20,10 @@ CardPresenter::CardPresenter(CardModel* model, CardView* view)
 
 CardPresenter::~CardPresenter()
 {
+	// Wait for any ongoing reading generation to complete
+	if (fReadingFuture.valid()) {
+		fReadingFuture.wait();
+	}
 }
 
 
@@ -33,8 +39,16 @@ CardPresenter::LoadThreeCardSpread()
 	// Show loading message while fetching AI reading
 	fView->DisplayReading("Fetching AI reading...");
 	
-	// Get an AI reading for the cards
-	BString reading = AIReading::GetReading(cards);
-	printf("AI Reading: %s\n", reading.String());
-	fView->DisplayReading(reading);
+	// Launch asynchronous task to get the AI reading
+	fReadingFuture = std::async(std::launch::async, [this, cards]() {
+		// Add a small delay to simulate network request
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		
+		// Get an AI reading for the cards
+		BString reading = AIReading::GetReading(cards);
+		printf("AI Reading: %s\n", reading.String());
+		
+		// Update the UI with the reading in a thread-safe manner
+		fView->UpdateReading(reading);
+	});
 }

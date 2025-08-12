@@ -13,6 +13,7 @@
 #include <TranslationUtils.h>
 #include <StringView.h>
 #include <LayoutBuilder.h>
+#include <Message.h>
 #include <stdio.h>
 
 CardView::CardView(BRect frame)
@@ -20,8 +21,7 @@ CardView::CardView(BRect frame)
 	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
 	fCardWidth(150),
 	fCardHeight(210), // More proportional to tarot card aspect ratio
-	fLabelHeight(40),  // Increased for better text display
-	fShowReading(false)
+	fLabelHeight(40)  // Increased for better text display
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
@@ -35,6 +35,24 @@ CardView::CardView(BRect frame)
 CardView::~CardView()
 {
 	ClearCards();
+}
+
+
+void
+CardView::MessageReceived(BMessage* message)
+{
+	switch (message->what) {
+		case 'UPDR': {
+			BString reading;
+			if (message->FindString("reading", &reading) == B_OK) {
+				DisplayReading(reading);
+			}
+			break;
+		}
+		default:
+			BView::MessageReceived(message);
+			break;
+	}
 }
 
 
@@ -256,7 +274,6 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 		fCards.push_back(display);
 	}
 	
-	fShowReading = false;
 	LayoutCards();
 	Invalidate();
 }
@@ -266,9 +283,24 @@ void
 CardView::DisplayReading(const BString& reading)
 {
 	fReading = reading;
-	// Always show both cards and reading now
-	fShowReading = false; // This flag is no longer used as we always show cards
 	Invalidate();
+}
+
+
+void
+CardView::UpdateReading(const BString& reading)
+{
+	// This method can be called from a background thread
+	// We need to synchronize with the UI thread
+	BMessage* message = new BMessage('UPDR');
+	message->AddString("reading", reading);
+	
+	// Post message to main thread
+	if (Looper()) {
+		Looper()->PostMessage(message, this);
+	} else {
+		delete message;
+	}
 }
 
 
