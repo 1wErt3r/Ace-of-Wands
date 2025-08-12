@@ -5,6 +5,7 @@
 
 #include "CardPresenter.h"
 #include "CardView.h"
+#include "AIReading.h"
 #include <stdio.h>
 
 CardPresenter::CardPresenter(CardModel* model, CardView* view)
@@ -28,4 +29,12 @@ CardPresenter::LoadThreeCardSpread()
 	fModel->GetThreeCardSpread(cards);
 	printf("Got %d cards from model\n", (int)cards.size());
 	fView->DisplayCards(cards);
+	
+	// Show loading message while fetching AI reading
+	fView->DisplayReading("Fetching AI reading...");
+	
+	// Get an AI reading for the cards
+	BString reading = AIReading::GetReading(cards);
+	printf("AI Reading: %s\n", reading.String());
+	fView->DisplayReading(reading);
 }

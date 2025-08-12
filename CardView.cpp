@@ -20,13 +20,14 @@ CardView::CardView(BRect frame)
 	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
 	fCardWidth(150),
 	fCardHeight(210), // More proportional to tarot card aspect ratio
-	fLabelHeight(35)  // Slightly taller for better text display
+	fLabelHeight(40),  // Increased for better text display
+	fShowReading(false)
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
 	// Set a better font for card labels
 	BFont font;
-	font.SetSize(14.0f); // Increased text size
+	font.SetSize(18.0f); // Increased text size
 	SetFont(&font);
 }
 
@@ -50,24 +51,17 @@ CardView::Draw(BRect updateRect)
 {
 	BView::Draw(updateRect);
 	
-	// Draw cards
+	// Define areas for cards and reading
+	BRect bounds = Bounds();
+	float cardAreaHeight = bounds.Height() * 0.7; // Use 70% of height for cards
+	BRect cardArea(bounds.left, bounds.top, bounds.right, bounds.top + cardAreaHeight);
+	BRect readingArea(bounds.left + 20, bounds.top + cardAreaHeight + 20, bounds.right - 20, bounds.bottom - 20); // Add margins
+	
+	// Draw cards in the top area
 	for (int i = 0; i < fCards.size(); i++) {
-		// Draw border with rounded corners for modern look
+		// Adjust card frame to fit within card area
 		BRect cardFrame = fCards[i].frame;
-		
-		// Draw card background with subtle gradient effect
-		SetHighColor(250, 250, 250, 255); // Very light gray background
-		FillRoundRect(cardFrame, 10, 10);
-		
-		// Draw a subtle shadow effect
-		SetHighColor(200, 200, 200, 100); // Light gray, semi-transparent
-		BRect shadowFrame = cardFrame;
-		shadowFrame.OffsetBy(2, 2);
-		FillRoundRect(shadowFrame, 10, 10);
-		
-		// Draw card border
-		SetHighColor(150, 150, 150, 255); // Gray border
-		StrokeRoundRect(cardFrame, 10, 10);
+		cardFrame.OffsetBy(0, cardArea.top);
 		
 		// Draw image
 		if (fCards[i].image) {
@@ -98,7 +92,7 @@ CardView::Draw(BRect updateRect)
 			}
 		}
 		
-		// Draw label text directly on the card
+		// Draw label with system default style
 		font_height fh;
 		GetFontHeight(&fh);
 		float labelY = cardFrame.bottom - (fLabelHeight/2) + (fh.ascent/2) - fh.descent/2;
@@ -107,14 +101,9 @@ CardView::Draw(BRect updateRect)
 		float stringWidth = StringWidth(displayName.String());
 		float labelX = cardFrame.left + (cardFrame.Width() - stringWidth) / 2;
 		
-		// Semi-transparent dark background for text readability
-		BRect labelBgRect(labelX - 5, cardFrame.bottom - fLabelHeight, labelX + stringWidth + 5, cardFrame.bottom);
-		SetHighColor(0, 0, 0, 128); // Semi-transparent black
-		FillRoundRect(labelBgRect, 5, 5);
-		
-		// White text for better contrast
-		SetHighColor(255, 255, 255, 255); // White
-		SetLowColor(0, 0, 0, 128); // Match background for text rendering
+		// Use system default colors for text
+		SetHighColor(ui_color(B_CONTROL_TEXT_COLOR));
+		SetLowColor(ui_color(B_CONTROL_BACKGROUND_COLOR));
 		
 		// Ensure text is centered and fits in label area
 		if (stringWidth > cardFrame.Width() - 10) {
@@ -129,6 +118,109 @@ CardView::Draw(BRect updateRect)
 			DrawString(truncatedName.String(), BPoint(labelX, labelY));
 		} else {
 			DrawString(displayName.String(), BPoint(labelX, labelY));
+		}
+	}
+	
+	// Draw the AI reading in the bottom area
+	if (!fReading.IsEmpty()) {
+		// Draw a background for the reading
+		SetHighColor(240, 240, 240, 255); // Light gray background
+		FillRect(readingArea);
+		
+		// Draw a border around the reading
+		SetHighColor(150, 150, 150, 255); // Gray border
+		StrokeRect(readingArea);
+		
+		// Set a larger font for the reading
+		BFont font;
+		GetFont(&font);
+		font.SetSize(18.0f); // Increased font size
+		SetFont(&font);
+		
+		// Draw the reading text with proper word wrapping
+		SetHighColor(0, 0, 0, 255); // Black text
+		
+		// Split the reading into lines that fit within the reading area
+		BString reading = fReading;
+		float lineHeight = font.Size() * 1.5f;
+		float y = readingArea.top + lineHeight;
+		float maxWidth = readingArea.Width() - 20; // Leave some padding
+		
+		int32 start = 0;
+		
+		while (start < reading.Length() && y < readingArea.bottom - lineHeight) {
+			// Find the end of the line that fits within maxWidth
+			int32 end = start;
+			int32 lastSpace = start;
+			
+			// Measure words until we exceed the width
+			while (end < reading.Length()) {
+				// Check for space to track word boundaries
+				if (reading[end] == ' ') {
+					lastSpace = end;
+				}
+				
+				// Check for explicit line breaks
+				if (reading[end] == '\n') {
+					end++;
+					break;
+				}
+				
+				// Create a substring to measure
+				BString substring;
+				reading.CopyInto(substring, start, end - start + 1);
+				
+				// If this substring exceeds our max width
+				if (StringWidth(substring.String()) > maxWidth) {
+					// If we've found a space, break there
+					if (lastSpace > start) {
+						end = lastSpace;
+					}
+					// Otherwise, we have a long word that we need to break
+					else if (end > start) {
+						end--; // Step back one character
+					}
+					break;
+				}
+				
+				end++;
+			}
+			
+			// Handle case where we reached the end of the string
+			if (end >= reading.Length()) {
+				end = reading.Length();
+			}
+			
+			// Extract the line
+			BString line;
+			reading.CopyInto(line, start, end - start);
+			
+			// Skip leading spaces
+			int32 lineStart = 0;
+			while (lineStart < line.Length() && line[lineStart] == ' ') {
+				lineStart++;
+			}
+			
+			if (lineStart < line.Length()) {
+				BString trimmedLine;
+				line.CopyInto(trimmedLine, lineStart, line.Length() - lineStart);
+				// Draw the line
+				DrawString(trimmedLine.String(), BPoint(readingArea.left + 10, y));
+			}
+			
+			// Move to the next line
+			y += lineHeight;
+			
+			// Move start position to the next non-space character
+			start = end;
+			while (start < reading.Length() && reading[start] == ' ') {
+				start++;
+			}
+			
+			// Skip the newline character if that's what we ended on
+			if (start < reading.Length() && reading[start] == '\n') {
+				start++;
+			}
 		}
 	}
 }
@@ -164,7 +256,18 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 		fCards.push_back(display);
 	}
 	
+	fShowReading = false;
 	LayoutCards();
+	Invalidate();
+}
+
+
+void
+CardView::DisplayReading(const BString& reading)
+{
+	fReading = reading;
+	// Always show both cards and reading now
+	fShowReading = false; // This flag is no longer used as we always show cards
 	Invalidate();
 }
 
@@ -198,7 +301,7 @@ CardView::LayoutCards()
 	// Calculate card dimensions based on view size
 	BRect bounds = Bounds();
 	float totalWidth = bounds.Width();
-	float totalHeight = bounds.Height();
+	float totalHeight = bounds.Height() * 0.7; // Use only 70% of height for cards
 	
 	// Simplified responsive design - always use 3 columns for the spread
 	int cardsPerRow = fCards.size(); // Keep all cards in one row for the spread
@@ -216,12 +319,20 @@ CardView::LayoutCards()
 	// Calculate card height maintaining aspect ratio (standard tarot card ratio ~ 2.5:3.5)
 	fCardHeight = fCardWidth * 1.4f; // 3.5/2.5 = 1.4
 	
+	// Make label height responsive to card size
+	fLabelHeight = fCardHeight * 0.15f; // 15% of card height for label
+	if (fLabelHeight < 30) fLabelHeight = 30; // Minimum label height
+	if (fLabelHeight > 60) fLabelHeight = 60; // Maximum label height
+	
+	// Adjust available height after determining label height
+	availableHeight -= fLabelHeight;
+	
 	// Remove the artificial maximum size limits to use more available space
 	// Only keep minimum size limits to ensure cards remain visible
 	if (fCardWidth < 100) fCardWidth = 100;
 	if (fCardHeight < 140) fCardHeight = 140;
 	
-	// Position cards in a row
+	// Position cards in a row (centered vertically within the top 70%)
 	float totalRowWidth = (fCardWidth * cardsPerRow) + (cardSpacing * (cardsPerRow - 1));
 	float rowStartX = (totalWidth - totalRowWidth) / 2;
 	float contentStartY = (totalHeight - fCardHeight - fLabelHeight) / 2;
@@ -234,6 +345,16 @@ CardView::LayoutCards()
 		fCards[i].frame.Set(xPosition, yPosition, 
 			xPosition + fCardWidth, yPosition + fCardHeight + fLabelHeight);
 	}
+	
+	// Update font size based on label height
+	BFont font;
+	GetFont(&font);
+	float fontSize = fLabelHeight * 0.5f; // Font size is 50% of label height
+	if (fontSize < 12) fontSize = 12; // Minimum font size
+	if (fontSize > 24) fontSize = 24; // Maximum font size
+	font.SetSize(fontSize);
+	SetFont(&font);
 }
+
 
 

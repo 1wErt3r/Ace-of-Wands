@@ -19,7 +19,7 @@
 
 MainWindow::MainWindow()
 	:
-	BWindow(BRect(100, 100, 700, 500), "Tarot Card Reader", B_TITLED_WINDOW,
+	BWindow(BRect(100, 100, 900, 700), "Tarot Card Reader", B_TITLED_WINDOW,
 		B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
 	fCardModel(NULL),
 	fCardView(NULL),

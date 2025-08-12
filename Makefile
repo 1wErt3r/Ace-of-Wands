@@ -5,7 +5,7 @@
 ## architecture of Haiku.
 
 # The name of the binary.
-NAME = MyApp
+NAME = Ace_of_Wands
 TARGET_DIR = .
 
 # The type of binary, must be one of:
@@ -34,7 +34,9 @@ SRCS =  App.cpp \
 		MainWindow.cpp \
 		CardModel.cpp \
 		CardView.cpp \
-		CardPresenter.cpp
+		CardPresenter.cpp \
+		AIReading.cpp \
+		Config.cpp
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
@@ -60,7 +62,7 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS =  be translation $(STDCPPLIBS)
+LIBS =  be translation curl jsoncpp $(STDCPPLIBS)
 
 #	Specify additional paths to directories following the standard libXXX.so
 #	or libXXX.a naming scheme. You can specify full paths or paths relative
@@ -72,7 +74,8 @@ LIBPATHS =
 #	Additional paths to look for system headers. These use the form
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
-SYSTEM_INCLUDE_PATHS =
+SYSTEM_INCLUDE_PATHS = /boot/system/develop/headers/curl \
+	/boot/system/develop/headers/jsoncpp
 
 #	Additional paths paths to look for local headers. These use the form
 #	#include "header". Directories that contain the files in SRCS are

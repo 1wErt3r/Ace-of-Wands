@@ -12,14 +12,14 @@ class CardView;
 
 class CardPresenter {
 public:
-							CardPresenter(CardModel* model, CardView* view);
-							~CardPresenter();
+						CardPresenter(CardModel* model, CardView* view);
+						~CardPresenter();
 
-			void			LoadThreeCardSpread();
+		void			LoadThreeCardSpread();
 
 private:
-			CardModel*		fModel;
-			CardView*		fView;
+		CardModel*		fModel;
+		CardView*		fView;
 };
 
 #endif // CARDPRESENTER_H

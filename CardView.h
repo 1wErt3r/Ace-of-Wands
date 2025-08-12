@@ -28,6 +28,7 @@ public:
 	virtual	void			FrameResized(float width, float height);
 
 			void			DisplayCards(const std::vector<class CardInfo>& cards);
+			void			DisplayReading(const BString& reading);
 			void			ClearCards();
 			void			RefreshLayout();
 
@@ -35,6 +36,8 @@ private:
 			void			LayoutCards();
 			
 			std::vector<CardDisplay> fCards;
+			BString			fReading;
+			bool			fShowReading;
 			float			fCardWidth;
 			float			fCardHeight;
 			float			fLabelHeight;
