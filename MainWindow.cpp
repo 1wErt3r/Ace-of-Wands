@@ -171,14 +171,19 @@ MainWindow::_CreateMenuBar()
 {
 	fMenuBar = new BMenuBar("MenuBar");
 
+	// Create Ace of Wands menu
+	BMenu* appMenu = new BMenu("Ace of Wands");
+	appMenu->AddItem(new BMenuItem("New Reading", new BMessage(kMsgNewReading), 'N'));
+	appMenu->AddSeparatorItem();
+
+	appMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
+
+	fMenuBar->AddItem(appMenu);
+
 	// Create File menu
 	BMenu* fileMenu = new BMenu("File");
-	fileMenu->AddItem(new BMenuItem("New Reading", new BMessage(kMsgNewReading), 'N'));
-	fileMenu->AddSeparatorItem();
 	fileMenu->AddItem(new BMenuItem("Open...", new BMessage(kMsgOpen), 'O'));
 	fileMenu->AddItem(new BMenuItem("Save...", new BMessage(kMsgSave), 'S'));
-	fileMenu->AddSeparatorItem();
-	fileMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
 
 	fMenuBar->AddItem(fileMenu);
 }
