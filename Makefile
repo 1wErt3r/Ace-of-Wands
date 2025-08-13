@@ -62,7 +62,7 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS =  be translation curl jsoncpp $(STDCPPLIBS)
+LIBS =  be tracker translation curl jsoncpp $(STDCPPLIBS)
 
 #	Specify additional paths to directories following the standard libXXX.so
 #	or libXXX.a naming scheme. You can specify full paths or paths relative
@@ -74,9 +74,7 @@ LIBPATHS =
 #	Additional paths to look for system headers. These use the form
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
-SYSTEM_INCLUDE_PATHS = /boot/system/develop/headers/curl \
-	/boot/system/develop/headers/jsoncpp \
-	/boot/system/develop/headers/os/translation
+SYSTEM_INCLUDE_PATHS = /boot/system/develop/headers/private/interface/
 
 #	Additional paths paths to look for local headers. These use the form
 #	#include "header". Directories that contain the files in SRCS are
@@ -117,7 +115,7 @@ DEBUGGER :=
 COMPILER_FLAGS = 
 
 #	Specify any additional linker flags to be used.
-LINKER_FLAGS = 
+LINKER_FLAGS =  
 
 #	(Only used when "TYPE" is "DRIVER"). Specify the desired driver install
 #	location in the /dev hierarchy. Example:

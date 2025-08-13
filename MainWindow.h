@@ -6,6 +6,10 @@
 #define MAINWINDOW_H
 
 #include <Window.h>
+#include <FilePanel.h>
+#include <Entry.h>
+#include <Path.h>
+#include <File.h>
 
 class BMenuBar;
 class CardModel;
@@ -26,11 +30,15 @@ public:
 
 private:
 		void		_CreateMenuBar();
+		void		_SaveFile(BPath path);
+		void		_OpenFile(BPath path);
 		
 		BMenuBar*		fMenuBar;
 		CardModel*		fCardModel;
 		CardView*		fCardView;
 		CardPresenter*	fCardPresenter;
+		BFilePanel*		fOpenFilePanel;
+		BFilePanel*		fSaveFilePanel;
 };
 
 #endif // MAINWINDOW_H

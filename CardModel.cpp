@@ -74,6 +74,11 @@ CardModel::Initialize()
 void
 CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 {
+	if (!fCurrentSpread.empty()) {
+		cards = fCurrentSpread;
+		return;
+	}
+
 	cards.clear();
 	
 	if (fCardResources.size() < 3)
@@ -105,6 +110,7 @@ CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 		info.displayName = FormatCardName(fCardResources[selectedIndices[i]].name);
 		cards.push_back(info);
 	}
+	fCurrentSpread = cards;
 }
 
 
@@ -171,4 +177,28 @@ CardModel::FormatCardName(const BString& resourceName)
 	}
 	
 	return name;
+}
+
+void
+CardModel::SetThreeCardSpread(const std::vector<CardInfo>& cards)
+{
+	fCurrentSpread = cards;
+}
+
+void
+CardModel::ClearCurrentSpread()
+{
+	fCurrentSpread.clear();
+}
+
+int32
+CardModel::GetResourceID(const BString& displayName)
+{
+	for (size_t i = 0; i < fCardResources.size(); ++i) {
+		BString formattedName = FormatCardName(fCardResources[i].name);
+		if (formattedName == displayName) {
+			return fCardResources[i].id;
+		}
+	}
+	return -1; // Not found
 }
