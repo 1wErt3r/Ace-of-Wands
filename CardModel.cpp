@@ -3,6 +3,8 @@
  * All rights reserved. Distributed under the terms of the MIT license.
  */
 
+#include <TranslationDefs.h>
+
 #include "CardModel.h"
 
 #include <Application.h>
@@ -16,6 +18,7 @@
 #include <ctime>
 #include <cctype>
 #include <cstdio>
+#include <Resources.h>
 
 CardModel::CardModel()
 {
@@ -30,37 +33,41 @@ CardModel::~CardModel()
 
 
 status_t
-CardModel::Initialize(const char* cardsDirectory)
+CardModel::Initialize()
 {
-	fCardsDirectory.SetTo(cardsDirectory);
-	ScanCardsDirectory();
-	
-	printf("Found %d card files in directory: %s\n", (int)fCardFiles.size(), cardsDirectory);
-	
-	return fCardFiles.size() > 0 ? B_OK : B_ERROR;
-}
+    BResources* appResources = BApplication::AppResources();
+    if (appResources == NULL) {
+        printf("Error: appResources is NULL\n");
+        return B_ERROR;
+    }
 
+    printf("Scanning application resources:\n");
+    int32 count = 0;
+    type_code type;
+    int32 id;
+    const char* name;
+    size_t size;
 
-void
-CardModel::ScanCardsDirectory()
-{
-	BDirectory dir(fCardsDirectory.Path());
-	if (dir.InitCheck() != B_OK)
-		return;
-		
-	entry_ref ref;
-	while (dir.GetNextRef(&ref) == B_OK) {
-		BEntry entry(&ref, true);
-		if (entry.IsFile()) {
-			BPath path(&entry);
-			BString fileName = path.Leaf();
-			
-			// Check if it's a JPG file
-			if (fileName.IFindLast(".jpg") != B_ERROR) {
-				fCardFiles.push_back(fileName);
-			}
-		}
-	}
+    while (appResources->GetResourceInfo(count, &type, &id, &name, &size)) {
+        printf("  Resource %d: Type: %c%c%c%c, ID: %d, Name: %s, Size: %lu\n",
+               count,
+               (char)(type >> 24),
+               (char)(type >> 16),
+               (char)(type >> 8),
+               (char)type,
+               id,
+               name,
+               size);
+        
+        if (type == 'BBMP' && BString(name).IFindLast(".jpg") != B_ERROR) {
+            fCardResources.push_back({id, BString(name)});
+        }
+        count++;
+    }
+
+    printf("Found %lu JPG resources.\n", fCardResources.size());
+
+    return fCardResources.size() > 0 ? B_OK : B_ERROR;
 }
 
 
@@ -69,13 +76,13 @@ CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 {
 	cards.clear();
 	
-	if (fCardFiles.size() < 3)
+	if (fCardResources.size() < 3)
 		return;
 	
 	// Select 3 random cards
 	std::vector<int> selectedIndices;
 	while (selectedIndices.size() < 3) {
-		int index = rand() % fCardFiles.size();
+		int index = rand() % fCardResources.size();
 		
 		// Check if already selected
 		bool alreadySelected = false;
@@ -94,19 +101,18 @@ CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 	// Create card info for each selected card
 	for (int i = 0; i < 3; i++) {
 		CardInfo info;
-		info.filePath = fCardsDirectory.Path();
-		info.filePath << "/" << fCardFiles[selectedIndices[i]];
-		info.displayName = FormatCardName(fCardFiles[selectedIndices[i]]);
+		info.resourceID = fCardResources[selectedIndices[i]].id;
+		info.displayName = FormatCardName(fCardResources[selectedIndices[i]].name);
 		cards.push_back(info);
 	}
 }
 
 
 BString
-CardModel::FormatCardName(const BString& fileName)
+CardModel::FormatCardName(const BString& resourceName)
 {
 	// Remove file extension
-	BString name = fileName;
+	BString name = resourceName;
 	int32 extIndex = name.IFindLast(".jpg");
 	if (extIndex != B_ERROR) {
 		name.Truncate(extIndex);

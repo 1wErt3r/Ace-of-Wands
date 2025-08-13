@@ -12,8 +12,13 @@
 #include <vector>
 
 struct CardInfo {
-	BString filePath;
+	int32 resourceID;
 	BString displayName;
+};
+
+struct CardResourceInfo {
+	int32 id;
+	BString name;
 };
 
 class CardModel {
@@ -21,15 +26,12 @@ public:
 							CardModel();
 							~CardModel();
 
-			status_t		Initialize(const char* cardsDirectory);
+			status_t		Initialize();
 			void			GetThreeCardSpread(std::vector<CardInfo>& cards);
-			BString			FormatCardName(const BString& fileName);
+			BString			FormatCardName(const BString& resourceName);
 
 private:
-			void			ScanCardsDirectory();
-			
-			BPath			fCardsDirectory;
-			std::vector<BString> fCardFiles;
+			std::vector<CardResourceInfo> fCardResources;
 };
 
 #endif // CARDMODEL_H

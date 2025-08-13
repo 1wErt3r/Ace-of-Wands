@@ -12,7 +12,7 @@ TARGET_DIR = .
 #	APP:	Application
 #	SHARED:	Shared library or add-on
 #	STATIC:	Static library archive
-#	DRIVER: Kernel driver
+#	DRIVER:	Kernel driver
 TYPE = APP
 
 # 	If you plan to use localization, specify the application's MIME signature.
@@ -21,7 +21,7 @@ APP_MIME_SIG = application/x-vnd.MyName-MyApp
 
 #	The following lines tell Pe and Eddie where the SRCS, RDEFS, and RSRCS are
 #	so that Pe and Eddie can fill them in for you.
-#%{
+# %{
 # @src->@
 
 #	Specify the source files to use. Full paths or paths relative to the
@@ -40,7 +40,7 @@ SRCS =  App.cpp \
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
-RDEFS = Resources.rdef
+RDEFS = Resources.rdef CardResources.rdef
 
 #	Specify the resource files to use. Full or relative paths can be used.
 #	Both RDEFS and RSRCS can be utilized in the same Makefile.
@@ -48,15 +48,15 @@ RSRCS =
 
 # End Pe/Eddie support.
 # @<-src@
-#%}
+# %}
 
 #	Specify libraries to link against.
 #	There are two acceptable forms of library specifications:
-#	-	if your library follows the naming pattern of libXXX.so or libXXX.a,
+#	- 	if your library follows the naming pattern of libXXX.so or libXXX.a,
 #		you can simply specify XXX for the library. (e.g. the entry for
 #		"libtracker.so" would be "tracker")
 #
-#	-	for GCC-independent linking of standard C++ libraries, you can use
+#	- 	for GCC-independent linking of standard C++ libraries, you can use
 #		$(STDCPPLIBS) instead of the raw "stdc++[.r4] [supc++]" library names.
 #
 #	- 	if your library does not follow the standard library naming scheme,
@@ -75,12 +75,13 @@ LIBPATHS =
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
 SYSTEM_INCLUDE_PATHS = /boot/system/develop/headers/curl \
-	/boot/system/develop/headers/jsoncpp
+	/boot/system/develop/headers/jsoncpp \
+	/boot/system/develop/headers/os/translation
 
 #	Additional paths paths to look for local headers. These use the form
 #	#include "header". Directories that contain the files in SRCS are
 #	automatically included.
-LOCAL_INCLUDE_PATHS =
+LOCAL_INCLUDE_PATHS = $(OBJDIR)
 
 #	Specify the level of optimization that you want. Specify either NONE (O0),
 #	SOME (O1), FULL (O2), or leave blank (for the default optimization level).
@@ -91,18 +92,18 @@ OPTIMIZE :=
 # 	will recreate only the "locales/en.catkeys" file. Use it as a template
 # 	for creating catkeys for other languages. All localization files must be
 # 	placed in the "locales" subdirectory.
-LOCALES =
+LOCALES = 
 
 #	Specify all the preprocessor symbols to be defined. The symbols will not
 #	have their values set automatically; you must supply the value (if any) to
 #	use. For example, setting DEFINES to "DEBUG=1" will cause the compiler
 #	option "-DDEBUG=1" to be used. Setting DEFINES to "DEBUG" would pass
 #	"-DDEBUG" on the compiler's command line.
-DEFINES =
+DEFINES = 
 
 #	Specify the warning level. Either NONE (suppress all warnings),
 #	ALL (enable all warnings), or leave blank (enable default warnings).
-WARNINGS =
+WARNINGS = 
 
 #	With image symbols, stack crawls in the debugger are meaningful.
 #	If set to "TRUE", symbols will be created.
@@ -113,10 +114,10 @@ SYMBOLS :=
 DEBUGGER :=
 
 #	Specify any additional compiler flags to be used.
-COMPILER_FLAGS =
+COMPILER_FLAGS = 
 
 #	Specify any additional linker flags to be used.
-LINKER_FLAGS =
+LINKER_FLAGS = 
 
 #	(Only used when "TYPE" is "DRIVER"). Specify the desired driver install
 #	location in the /dev hierarchy. Example:
@@ -124,7 +125,9 @@ LINKER_FLAGS =
 #	will instruct the "driverinstall" rule to place a symlink to your driver's
 #	binary in ~/add-ons/kernel/drivers/dev/video/usb, so that your driver will
 #	appear at /dev/video/usb when loaded. The default is "misc".
-DRIVER_PATH =
+DRIVER_PATH = 
+
+RC_FLAGS = -h
 
 ## Include the Makefile-Engine
 DEVEL_DIRECTORY := \

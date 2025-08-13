@@ -15,10 +15,11 @@
 #include <LayoutBuilder.h>
 #include <Message.h>
 #include <stdio.h>
+#include <Application.h>
+#include <Resources.h>
 
 CardView::CardView(BRect frame)
-	:
-	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
+	: BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
 	fCardWidth(150),
 	fCardHeight(210), // More proportional to tarot card aspect ratio
 	fLabelHeight(40)  // Increased for better text display
@@ -263,12 +264,21 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 		CardDisplay display;
 		display.displayName = cards[i].displayName;
 		
-		// Load image
-		display.image = BTranslationUtils::GetBitmapFile(cards[i].filePath.String());
+		// Load image from resources
+		BResources* appResources = BApplication::AppResources();
+		if (appResources) {
+			size_t size;
+			const void* data = appResources->LoadResource('BBMP', cards[i].resourceID, &size);
+			if (data) {
+				BMemoryIO stream(data, size);
+				display.image = BTranslationUtils::GetBitmap(&stream);
+			}
+		}
+
 		if (display.image) {
-			printf("Loaded image: %s\n", cards[i].filePath.String());
+			printf("Loaded image: %d\n", cards[i].resourceID);
 		} else {
-			printf("Failed to load image: %s\n", cards[i].filePath.String());
+			printf("Failed to load image: %d\n", cards[i].resourceID);
 		}
 		
 		fCards.push_back(display);
@@ -312,7 +322,7 @@ CardView::ClearCards()
 		fCards[i].image = NULL;
 	}
 	
-	fCards.clear();
+fCards.clear();
 }
 
 
@@ -387,6 +397,3 @@ CardView::LayoutCards()
 	font.SetSize(fontSize);
 	SetFont(&font);
 }
-
-
-

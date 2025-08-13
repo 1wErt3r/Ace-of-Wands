@@ -37,19 +37,8 @@ MainWindow::MainWindow()
 	// Create the card model
 	fCardModel = new CardModel();
 	
-	// Set up the cards directory
-	BString cardsPath = "/boot/home/Ace_of_Wands/cards";
-	
-	if (fCardModel->Initialize(cardsPath.String()) != B_OK) {
-		// Try relative path
-		cardsPath = "cards";
-		if (fCardModel->Initialize(cardsPath.String()) != B_OK) {
-			printf("Failed to initialize card model with path: %s\n", cardsPath.String());
-		} else {
-			printf("Initialized card model with relative path: %s\n", cardsPath.String());
-		}
-	} else {
-		printf("Initialized card model with absolute path: %s\n", cardsPath.String());
+	if (fCardModel->Initialize() != B_OK) {
+		printf("Failed to initialize card model\n");
 	}
 	
 	// Create the card view
@@ -97,7 +86,7 @@ MainWindow::MessageReceived(BMessage* message)
 			LoadSpread();
 			break;
 			
-		default:
+default:
 		{
 			BWindow::MessageReceived(message);
 			break;

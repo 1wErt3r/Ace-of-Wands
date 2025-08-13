@@ -35,7 +35,9 @@ core.*
 *.user
 *.pro.user
 QWEN.md
+GEMINI.md
 
 # Git files
 .git/
 
+Ace_of_Wands
