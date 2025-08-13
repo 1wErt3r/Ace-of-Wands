@@ -4,6 +4,6 @@
 
 class Config {
 public:
-	static	BString		GetAPIKey();
-	static	bool		IsAPIKeySet();
+	static BString GetAPIKey();
+	static bool IsAPIKeySet();
 };

@@ -1,21 +1,20 @@
 #include "MainWindow.h"
 #include "CardModel.h"
-#include "CardView.h"
 #include "CardPresenter.h"
+#include "CardView.h"
 
 #include "AIReading.h"
 
 #include <Application.h>
 #include <Button.h>
+#include <FilePanel.h>
 #include <LayoutBuilder.h>
+#include <Menu.h>
+#include <MenuBar.h>
+#include <MenuItem.h>
 #include <String.h>
 #include <View.h>
-#include <MenuBar.h>
-#include <Menu.h>
-#include <MenuItem.h>
 #include <stdio.h>
-#include <FilePanel.h>
-#include <Application.h>
 
 const uint32 kAppMessageBase = 'AOW_';
 const uint32 kMsgNewReading = kAppMessageBase + 1;
@@ -36,34 +35,33 @@ MainWindow::MainWindow()
 {
 	// Create menu bar
 	_CreateMenuBar();
-	
+
 	// Create the card model
 	fCardModel = new CardModel();
-	
-	if (fCardModel->Initialize() != B_OK) {
+
+	if (fCardModel->Initialize() != B_OK)
 		printf("Failed to initialize card model\n");
-	}
-	
+
 	// Create the card view
 	fCardView = new CardView(Bounds());
-	
+
 	// Set resizing mode to follow window size changes
 	fCardView->SetResizingMode(B_FOLLOW_ALL_SIDES);
-	
+
 	// Create the presenter
 	fCardPresenter = new CardPresenter(fCardModel, fCardView);
-	
+
 	// Create file panels
-	fOpenFilePanel = new BFilePanel(B_OPEN_PANEL, new BMessenger(this), NULL, B_FILE_NODE, false, NULL);
-	fSaveFilePanel = new BFilePanel(B_SAVE_PANEL, new BMessenger(this), NULL, B_FILE_NODE, false, NULL);
-		
-		printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
-		
-		// Use layout builder to arrange menu bar and card view
-	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-		.Add(fMenuBar)
-		.Add(fCardView);
-	
+	fOpenFilePanel
+		= new BFilePanel(B_OPEN_PANEL, new BMessenger(this), NULL, B_FILE_NODE, false, NULL);
+	fSaveFilePanel
+		= new BFilePanel(B_SAVE_PANEL, new BMessenger(this), NULL, B_FILE_NODE, false, NULL);
+
+	printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
+
+	// Use layout builder to arrange menu bar and card view
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardView);
+
 	// Load initial spread
 	LoadSpread();
 }
@@ -74,17 +72,17 @@ MainWindow::~MainWindow()
 	// Clean up in proper order
 	delete fCardPresenter;
 	fCardPresenter = NULL;
-	
+
 	// Remove the card view from the window before deleting it
 	if (fCardView) {
 		fCardView->RemoveSelf();
 		delete fCardView;
 		fCardView = NULL;
 	}
-	
+
 	delete fCardModel;
 	fCardModel = NULL;
-	
+
 	delete fOpenFilePanel;
 	delete fSaveFilePanel;
 }
@@ -111,7 +109,7 @@ MainWindow::MessageReceived(BMessage* message)
 			const char* name;
 			message->FindRef("directory", &directoryRef);
 			message->FindString("name", &name);
-			
+
 			BPath path(&directoryRef);
 			path.Append(name);
 			printf("Save requested to: %s\n", path.Path());
@@ -122,15 +120,15 @@ MainWindow::MessageReceived(BMessage* message)
 		{
 			entry_ref ref;
 			message->FindRef("refs", 0, &ref);
-			
+
 			BPath path(&ref);
-            printf("Open requested for: %s\n", path.Path());
-            _OpenFile(path);
-            break;
+			printf("Open requested for: %s\n", path.Path());
+			_OpenFile(path);
+			break;
 		}
 
-			
-default:
+
+		default:
 		{
 			BWindow::MessageReceived(message);
 			break;
@@ -143,11 +141,10 @@ void
 MainWindow::FrameResized(float width, float height)
 {
 	BWindow::FrameResized(width, height);
-	
+
 	// Explicitly tell the card view to relayout
-	if (fCardView) {
+	if (fCardView)
 		fCardView->RefreshLayout();
-	}
 }
 
 
@@ -173,7 +170,7 @@ void
 MainWindow::_CreateMenuBar()
 {
 	fMenuBar = new BMenuBar("MenuBar");
-	
+
 	// Create File menu
 	BMenu* fileMenu = new BMenu("File");
 	fileMenu->AddItem(new BMenuItem("New Reading", new BMessage(kMsgNewReading), 'N'));
@@ -182,9 +179,10 @@ MainWindow::_CreateMenuBar()
 	fileMenu->AddItem(new BMenuItem("Save...", new BMessage(kMsgSave), 'S'));
 	fileMenu->AddSeparatorItem();
 	fileMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
-	
-fMenuBar->AddItem(fileMenu);
+
+	fMenuBar->AddItem(fileMenu);
 }
+
 
 void
 MainWindow::_SaveFile(BPath path)
@@ -200,15 +198,15 @@ MainWindow::_SaveFile(BPath path)
 	fCardModel->GetThreeCardSpread(cards);
 
 	BString content = "Tarot Reading:\n\n";
-	for (size_t i = 0; i < cards.size(); ++i) {
+	for (size_t i = 0; i < cards.size(); ++i)
 		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
-	}
 	content << "\nAI Reading:\n" << AIReading::GetReading(cards) << "\n";
 
 	file.Write(content.String(), content.Length());
 	file.Unset();
 	printf("File saved successfully to: %s\n", path.Path());
 }
+
 
 void
 MainWindow::_OpenFile(BPath path)
@@ -269,5 +267,3 @@ MainWindow::_OpenFile(BPath path)
 		printf("Error: Could not parse 3 cards from file.\n");
 	}
 }
-
-

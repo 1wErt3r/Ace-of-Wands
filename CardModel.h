@@ -18,17 +18,17 @@ struct CardResourceInfo {
 
 class CardModel {
 public:
-							CardModel();
-							~CardModel();
+	CardModel();
+	~CardModel();
 
-			status_t		Initialize();
-			void			GetThreeCardSpread(std::vector<CardInfo>& cards);
-			void			SetThreeCardSpread(const std::vector<CardInfo>& cards);
-			void			ClearCurrentSpread();
-			BString			FormatCardName(const BString& resourceName);
-			int32			GetResourceID(const BString& displayName);
+	status_t Initialize();
+	void GetThreeCardSpread(std::vector<CardInfo>& cards);
+	void SetThreeCardSpread(const std::vector<CardInfo>& cards);
+	void ClearCurrentSpread();
+	BString FormatCardName(const BString& resourceName);
+	int32 GetResourceID(const BString& displayName);
 
 private:
-			std::vector<CardResourceInfo> fCardResources;
-			std::vector<CardInfo> fCurrentSpread;
+	std::vector<CardResourceInfo> fCardResources;
+	std::vector<CardInfo> fCurrentSpread;
 };

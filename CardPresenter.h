@@ -1,21 +1,21 @@
 #pragma once
 
-#include <vector>
-#include <thread>
-#include <future>
 #include "CardModel.h"
+#include <future>
+#include <thread>
+#include <vector>
 
 class CardView;
 
 class CardPresenter {
 public:
-						CardPresenter(CardModel* model, CardView* view);
-						~CardPresenter();
+	CardPresenter(CardModel* model, CardView* view);
+	~CardPresenter();
 
-		void			LoadThreeCardSpread();
+	void LoadThreeCardSpread();
 
 private:
-		CardModel*		fModel;
-		CardView*		fView;
-		std::future<void> fReadingFuture;
+	CardModel* fModel;
+	CardView* fView;
+	std::future<void> fReadingFuture;
 };

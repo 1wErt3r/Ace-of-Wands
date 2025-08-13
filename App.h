@@ -4,14 +4,13 @@
 
 class MainWindow;
 
-class App : public BApplication
-{
+class App : public BApplication {
 public:
-						App();
-	virtual				~App();
-	
-	virtual void		ReadyToRun();
+	App();
+	virtual ~App();
+
+	virtual void ReadyToRun();
 
 private:
-	MainWindow*			fWindow;
+	MainWindow* fWindow;
 };
