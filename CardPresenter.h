@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CardModel.h"
+#include "Reading.h"
 #include <future>
 #include <thread>
 #include <vector>
@@ -13,9 +14,12 @@ public:
 	~CardPresenter();
 
 	void LoadThreeCardSpread();
+	BString GetCurrentReading() const { return fCurrentReading; }
 
 private:
 	CardModel* fModel;
 	CardView* fView;
 	std::future<void> fReadingFuture;
+	Reading* fReading;
+	BString fCurrentReading;
 };

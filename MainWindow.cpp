@@ -200,7 +200,7 @@ MainWindow::_SaveFile(BPath path)
 	BString content = "Tarot Reading:\n\n";
 	for (size_t i = 0; i < cards.size(); ++i)
 		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
-	content << "\nAI Reading:\n" << AIReading::GetReading(cards) << "\n";
+	content << "\nAI Reading:\n" << fCardPresenter->GetCurrentReading() << "\n";
 
 	file.Write(content.String(), content.Length());
 	file.Unset();
