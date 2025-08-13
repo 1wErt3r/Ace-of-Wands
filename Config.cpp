@@ -7,7 +7,7 @@ BString
 Config::GetAPIKey()
 {
 	// First try to get the API key from environment variable
-	const char* apiKey = getenv("OPENAI_API_KEY");
+	const char* apiKey = getenv("DEEPSEEK_API_KEY");
 	if (apiKey != NULL)
 		return BString(apiKey);
 

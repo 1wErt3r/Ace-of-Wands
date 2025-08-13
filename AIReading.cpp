@@ -25,7 +25,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	// Check if API key is set
 	if (!Config::IsAPIKeySet()) {
 		BString message
-			= "OpenAI API key not set. Please set the OPENAI_API_KEY environment variable.\n\n";
+			= "DeepSeek API key not set. Please set the DEEPSEEK_API_KEY environment variable.\n\n";
 		message += "Card spread: ";
 
 		for (size_t i = 0; i < cards.size(); i++) {
@@ -57,7 +57,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 
 	// Prepare the JSON payload
 	Json::Value jsonPayload;
-	jsonPayload["model"] = "gpt-3.5-turbo";
+	jsonPayload["model"] = "deepseek-chat";
 	jsonPayload["messages"][0]["role"] = "user";
 	jsonPayload["messages"][0]["content"] = prompt.String();
 	jsonPayload["max_tokens"] = 150;
@@ -77,7 +77,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	headers = curl_slist_append(headers, authHeader.String());
 	headers = curl_slist_append(headers, "Content-Type: application/json");
 
-	curl_easy_setopt(curl, CURLOPT_URL, "https://api.openai.com/v1/chat/completions");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://api.deepseek.com/v1/chat/completions");
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonString.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
