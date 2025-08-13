@@ -1,7 +1,9 @@
 # Ace of Wands - Tarot Card Reading Application
 
 ## Overview
-Ace of Wands is a desktop application for Haiku OS that provides tarot card readings. It allows users to draw a three-card spread, and save/load readings. 
+Ace of Wands is a desktop application for Haiku OS that provides tarot card readings. It allows users to draw a three-card spread, receive an AI-generated interpretation of the spread, and save/load readings.
+
+![Ace of Wands Screenshot](ace-of-wands.png) 
 
 The application can optionally provide AI-powered interpretations using the DeepSeek API.
 
