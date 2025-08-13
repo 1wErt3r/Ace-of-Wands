@@ -1,14 +1,14 @@
 #pragma once
 
-#include <vector>
 #include <support/String.h>
+#include <vector>
 
 class Reading {
 public:
-    Reading(const std::vector<BString>& cardNames);
-    BString GetInterpretation();
+	Reading(const std::vector<BString>& cardNames);
+	BString GetInterpretation();
 
 private:
-    std::vector<BString> fCardNames;
-    BString GenerateInterpretation();
+	std::vector<BString> fCardNames;
+	BString GenerateInterpretation();
 };
