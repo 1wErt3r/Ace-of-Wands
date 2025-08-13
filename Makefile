@@ -5,7 +5,7 @@
 ## architecture of Haiku.
 
 # The name of the binary.
-NAME = Ace_of_Wands
+NAME = Ace-of-Wands
 TARGET_DIR = .
 
 # The type of binary, must be one of:
@@ -17,7 +17,7 @@ TYPE = APP
 
 # 	If you plan to use localization, specify the application's MIME signature.
 
-APP_MIME_SIG = application/x-vnd.MyName-MyApp
+APP_MIME_SIG = application/x-vnd.Ace-of-Wands
 
 #	The following lines tell Pe and Eddie where the SRCS, RDEFS, and RSRCS are
 #	so that Pe and Eddie can fill them in for you.

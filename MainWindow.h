@@ -1,9 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <Window.h>
 #include <FilePanel.h>
@@ -41,4 +36,3 @@ private:
 		BFilePanel*		fSaveFilePanel;
 };
 
-#endif // MAINWINDOW_H

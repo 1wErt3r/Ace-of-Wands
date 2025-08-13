@@ -1,9 +1,3 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-
-
 #include "MainWindow.h"
 #include "CardModel.h"
 #include "CardView.h"
@@ -269,7 +263,7 @@ MainWindow::_OpenFile(BPath path)
 
 	if (loadedCards.size() == 3) {
 		fCardModel->SetThreeCardSpread(loadedCards);
-		fCardPresenter->LoadThreeCardSpread();
+		fCardView->DisplayCards(loadedCards);
 		fCardView->DisplayReading(aiReadingText);
 	} else {
 		printf("Error: Could not parse 3 cards from file.\n");

@@ -1,10 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-
 #include "CardView.h"
-
 #include "CardModel.h"
 
 #include <Bitmap.h>

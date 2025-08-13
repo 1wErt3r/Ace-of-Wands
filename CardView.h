@@ -1,9 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-#ifndef CARDVIEW_H
-#define CARDVIEW_H
+#pragma once
 
 #include <View.h>
 #include <String.h>
@@ -45,5 +40,3 @@ private:
 			float			fCardHeight;
 			float			fLabelHeight;
 };
-
-#endif // CARDVIEW_H

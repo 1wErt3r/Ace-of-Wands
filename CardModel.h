@@ -1,9 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-#ifndef CARDMODEL_H
-#define CARDMODEL_H
+#pragma once
 
 #include <Directory.h>
 #include <Entry.h>
@@ -37,5 +32,3 @@ private:
 			std::vector<CardResourceInfo> fCardResources;
 			std::vector<CardInfo> fCurrentSpread;
 };
-
-#endif // CARDMODEL_H

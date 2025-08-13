@@ -1,9 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-#ifndef CARDPRESENTER_H
-#define CARDPRESENTER_H
+#pragma once
 
 #include <vector>
 #include <thread>
@@ -24,5 +19,3 @@ private:
 		CardView*		fView;
 		std::future<void> fReadingFuture;
 };
-
-#endif // CARDPRESENTER_H

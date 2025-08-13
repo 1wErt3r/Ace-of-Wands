@@ -1,9 +1,4 @@
-/*
- * Copyright 2024, My Name <my@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
- */
-#ifndef AIREADING_H
-#define AIREADING_H
+#pragma once
 
 #include <String.h>
 #include <vector>
@@ -14,5 +9,3 @@ class AIReading {
 public:
 	static	BString		GetReading(const std::vector<CardInfo>& cards);
 };
-
-#endif // AIREADING_H
