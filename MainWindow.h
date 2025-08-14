@@ -28,9 +28,10 @@ private:
 	void _OpenFile(BPath path);
 
 	BMenuBar* fMenuBar;
+	BFilePanel* fOpenFilePanel;
+	BFilePanel* fSaveFilePanel;
+
 	CardModel* fCardModel;
 	CardView* fCardView;
 	CardPresenter* fCardPresenter;
-	BFilePanel* fOpenFilePanel;
-	BFilePanel* fSaveFilePanel;
 };

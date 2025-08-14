@@ -5,7 +5,7 @@ resource app_flags B_SINGLE_LAUNCH;
 resource app_version {
 	major  = 1,
 	middle = 0,
-	minor  = 0,
+	minor  = 2,
 
 	/* 0 = development	1 = alpha			2 = beta
 	   3 = gamma		4 = golden master	5 = final */
@@ -13,8 +13,8 @@ resource app_version {
 
 	internal = 0,
 
-	short_info = "A short description",
-	long_info  = "A little bit longer description of the app."
+	short_info = "A simple tarot card reading app.",
+	long_info  = "Ace of Wands is a simple tarot card reading app based on the Rider-Waite deck."
 };
 
 resource vector_icon {

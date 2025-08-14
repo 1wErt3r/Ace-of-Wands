@@ -92,6 +92,31 @@ CardView::Draw(BRect updateRect)
 {
 	BView::Draw(updateRect);
 
+	if (fCards.empty()) {
+		// If there are no cards, draw a welcome message
+		SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+		FillRect(Bounds());
+
+		const char* message = "Choose New Reading from the Ace of Wands menu to get started";
+		BFont font;
+		GetFont(&font);
+		font.SetSize(18);
+		SetFont(&font);
+
+		font_height fh;
+		font.GetHeight(&fh);
+		float stringWidth = font.StringWidth(message);
+		float stringHeight = fh.ascent + fh.descent;
+
+		BRect bounds = Bounds();
+		float x = bounds.left + (bounds.Width() - stringWidth) / 2;
+		float y = bounds.top + (bounds.Height() - stringHeight) / 2 + fh.ascent;
+
+		SetHighColor(ui_color(B_CONTROL_TEXT_COLOR));
+		DrawString(message, BPoint(x, y));
+		return;
+	}
+
 	// Define area for cards (reading area is handled by the scroll view)
 	BRect bounds = Bounds();
 	BRect cardArea(bounds.left, bounds.top, bounds.right, bounds.top + fCardAreaHeight);

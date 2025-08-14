@@ -61,9 +61,6 @@ MainWindow::MainWindow()
 
 	// Use layout builder to arrange menu bar and card view
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardView);
-
-	// Load initial spread
-	LoadSpread();
 }
 
 
