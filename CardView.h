@@ -5,6 +5,8 @@
 #include <vector>
 
 class BBitmap;
+class BScrollView;
+class BTextView;
 
 struct CardDisplay {
 	BBitmap* image;
@@ -33,10 +35,14 @@ public:
 
 private:
 	void LayoutCards();
+	void LayoutReadingArea();
 
 	std::vector<CardDisplay> fCards;
 	BString fReading;
+	BTextView* fReadingView;
+	BScrollView* fScrollView;
 	float fCardWidth;
 	float fCardHeight;
 	float fLabelHeight;
+	float fCardAreaHeight;
 };
