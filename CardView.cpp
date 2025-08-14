@@ -263,20 +263,8 @@ CardView::RefreshLayout()
 void
 CardView::LayoutCards()
 {
-	// Calculate card dimensions based on view size
 	BRect bounds = Bounds();
 	float totalWidth = bounds.Width();
-
-	if (fCards.size() == 0 && fReading.IsEmpty()) {
-		fCardAreaHeight = bounds.Height(); // Cards take 100% height if no cards and no reading
-	} else {
-		fCardAreaHeight
-			= bounds.Height() * 0.7; // Cards take 70% height if there's a reading or cards
-	}
-	float totalHeight = fCardAreaHeight;
-
-	if (fCards.size() == 0)
-		return;
 
 	// Simplified responsive design - always use 3 columns for the spread
 	int cardsPerRow = fCards.size(); // Keep all cards in one row for the spread
@@ -285,13 +273,10 @@ CardView::LayoutCards()
 
 	// Calculate available space for cards
 	float availableWidth = totalWidth - (marginX * 2);
-	float availableHeight = totalHeight - (marginY * 2) - fLabelHeight;
+	float cardSpacing = 20.0f;
 
 	// Calculate card dimensions
-	float cardSpacing = 20.0f;
 	fCardWidth = (availableWidth - (cardSpacing * (cardsPerRow - 1))) / cardsPerRow;
-
-	// Calculate card height maintaining aspect ratio (standard tarot card ratio ~ 2.5:3.5)
 	fCardHeight = fCardWidth * 1.4f; // 3.5/2.5 = 1.4
 
 	// Make label height responsive to card size
@@ -301,17 +286,27 @@ CardView::LayoutCards()
 	if (fLabelHeight > 60)
 		fLabelHeight = 60; // Maximum label height
 
-	// Adjust available height after determining label height
-	availableHeight -= fLabelHeight;
-
-	// Remove the artificial maximum size limits to use more available space
 	// Only keep minimum size limits to ensure cards remain visible
 	if (fCardWidth < 100)
 		fCardWidth = 100;
 	if (fCardHeight < 140)
 		fCardHeight = 140;
 
-	// Position cards in a row (centered vertically within the top 70%)
+	float minRequiredCardAreaHeight = fCardHeight + fLabelHeight + (2 * marginY);
+
+	if (fCards.size() == 0 && fReading.IsEmpty()) {
+		fCardAreaHeight = bounds.Height(); // Cards take 100% height if no cards and no reading
+	} else {
+		// Ensure enough space for cards, but also reserve 30% for reading if present
+		fCardAreaHeight = std::max(minRequiredCardAreaHeight, bounds.Height() * 0.7f);
+	}
+
+	float totalHeight = fCardAreaHeight;
+
+	if (fCards.size() == 0)
+		return;
+
+	// Position cards in a row (centered vertically within the top area)
 	float totalRowWidth = (fCardWidth * cardsPerRow) + (cardSpacing * (cardsPerRow - 1));
 	float rowStartX = (totalWidth - totalRowWidth) / 2;
 	float contentStartY = (totalHeight - fCardHeight - fLabelHeight) / 2;
