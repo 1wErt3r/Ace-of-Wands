@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Config.h"
 #include "MainWindow.h"
 
 #include <Alert.h>
@@ -23,6 +24,11 @@ App::~App()
 void
 App::ReadyToRun()
 {
+	// Load the API key from file if it exists
+	BString savedApiKey = Config::LoadAPIKeyFromFile();
+	if (!savedApiKey.IsEmpty())
+		Config::SetAPIKey(savedApiKey);
+
 	fWindow = new MainWindow();
 	fWindow->Show();
 }

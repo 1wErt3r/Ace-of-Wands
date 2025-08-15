@@ -2,6 +2,8 @@
 #include "CardModel.h"
 #include "CardPresenter.h"
 #include "CardView.h"
+#include "Config.h"
+#include "SettingsWindow.h"
 
 #include "AIReading.h"
 
@@ -15,11 +17,6 @@
 #include <String.h>
 #include <View.h>
 #include <stdio.h>
-
-const uint32 kAppMessageBase = 'AOW_';
-const uint32 kMsgNewReading = kAppMessageBase + 1;
-const uint32 kMsgSave = kAppMessageBase + 2;
-const uint32 kMsgOpen = kAppMessageBase + 3;
 
 
 MainWindow::MainWindow()
@@ -100,6 +97,23 @@ MainWindow::MessageReceived(BMessage* message)
 			if (fSaveFilePanel != NULL)
 				fSaveFilePanel->Show();
 			break;
+		case kMsgSettings:
+		{
+			SettingsWindow* settingsWindow = new SettingsWindow(this);
+			settingsWindow->Show();
+			break;
+		}
+		case kMsgAPIKeyReceived:
+		{
+			// Handle API key received from settings window
+			const char* apiKey;
+			if (message->FindString("apiKey", &apiKey) == B_OK) {
+				// Store the API key in the Config class
+				Config::SetAPIKey(BString(apiKey));
+				printf("API key has been set and stored.\n");
+			}
+			break;
+		}
 		case B_SAVE_REQUESTED:
 		{
 			entry_ref directoryRef;
@@ -171,6 +185,8 @@ MainWindow::_CreateMenuBar()
 	// Create Ace of Wands menu
 	BMenu* appMenu = new BMenu("Ace of Wands");
 	appMenu->AddItem(new BMenuItem("New Reading", new BMessage(kMsgNewReading), 'N'));
+	appMenu->AddItem(new BMenuItem("Settings...", new BMessage(kMsgSettings), 'P'));
+
 	appMenu->AddSeparatorItem();
 
 	appMenu->AddItem(new BMenuItem("Quit", new BMessage(B_QUIT_REQUESTED), 'Q'));
