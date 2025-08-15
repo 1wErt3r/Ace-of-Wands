@@ -7,17 +7,22 @@
 #include <LayoutBuilder.h>
 #include <StringView.h>
 #include <TextControl.h>
+#include <cstdio>
 
 
 SettingsWindow::SettingsWindow(BWindow* owner)
 	:
 	BWindow(BRect(100, 100, 500, 300), "Settings", B_TITLED_WINDOW,
-		B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS),
+		B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS),
 	fOwnerMessenger(owner)
 {
 	fInstructions = new BStringView("instructions", "Enter your DeepSeek API Key:");
 	fAPIKeyInput = new BTextControl("apiKeyInput", "API Key:", "", NULL);
 	fAPIKeyInput->TextView()->HideTyping(true); // Make it a password field
+
+	// Populate the API key field when the window is created
+	BString apiKey = Config::GetAPIKey();
+	fAPIKeyInput->SetText(apiKey.String());
 
 	fSaveButton = new BButton("saveButton", "Save", new BMessage(kMsgSaveAPIKey));
 
@@ -30,12 +35,6 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 		.Add(fSaveButton)
 		.End()
 		.Layout();
-
-	// Set the current API key if one is already set
-	// This needs to be done after the layout is created
-	BString currentApiKey = Config::GetAPIKey();
-	if (!currentApiKey.IsEmpty())
-		fAPIKeyInput->SetText(currentApiKey.String());
 }
 
 

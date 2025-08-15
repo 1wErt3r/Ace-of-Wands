@@ -1,11 +1,7 @@
 #include "MainWindow.h"
-#include "CardModel.h"
 #include "CardPresenter.h"
-#include "CardView.h"
 #include "Config.h"
 #include "SettingsWindow.h"
-
-#include "AIReading.h"
 
 #include <Application.h>
 #include <Button.h>
@@ -16,7 +12,7 @@
 #include <MenuItem.h>
 #include <String.h>
 #include <View.h>
-#include <stdio.h>
+#include <cstdio>
 
 
 MainWindow::MainWindow()
@@ -24,8 +20,6 @@ MainWindow::MainWindow()
 	BWindow(BRect(100, 100, 900, 700), "Ace of Wands", B_TITLED_WINDOW,
 		B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
 	fMenuBar(NULL),
-	fCardModel(NULL),
-	fCardView(NULL),
 	fCardPresenter(NULL),
 	fOpenFilePanel(NULL),
 	fSaveFilePanel(NULL)
@@ -33,20 +27,8 @@ MainWindow::MainWindow()
 	// Create menu bar
 	_CreateMenuBar();
 
-	// Create the card model
-	fCardModel = new CardModel();
-
-	if (fCardModel->Initialize() != B_OK)
-		printf("Failed to initialize card model\n");
-
-	// Create the card view
-	fCardView = new CardView(Bounds());
-
-	// Set resizing mode to follow window size changes
-	fCardView->SetResizingMode(B_FOLLOW_ALL_SIDES);
-
 	// Create the presenter
-	fCardPresenter = new CardPresenter(fCardModel, fCardView);
+	fCardPresenter = new CardPresenter();
 
 	// Create file panels
 	fOpenFilePanel
@@ -57,7 +39,7 @@ MainWindow::MainWindow()
 	printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
 
 	// Use layout builder to arrange menu bar and card view
-	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardView);
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardPresenter->GetView());
 }
 
 
@@ -66,16 +48,6 @@ MainWindow::~MainWindow()
 	// Clean up in proper order
 	delete fCardPresenter;
 	fCardPresenter = NULL;
-
-	// Remove the card view from the window before deleting it
-	if (fCardView) {
-		fCardView->RemoveSelf();
-		delete fCardView;
-		fCardView = NULL;
-	}
-
-	delete fCardModel;
-	fCardModel = NULL;
 
 	delete fOpenFilePanel;
 	delete fSaveFilePanel;
@@ -87,7 +59,8 @@ MainWindow::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
 		case kMsgNewReading:
-			LoadSpread();
+			if (fCardPresenter)
+				fCardPresenter->NewReading();
 			break;
 		case kMsgOpen:
 			if (fOpenFilePanel != NULL)
@@ -108,8 +81,8 @@ MainWindow::MessageReceived(BMessage* message)
 			// Handle API key received from settings window
 			const char* apiKey;
 			if (message->FindString("apiKey", &apiKey) == B_OK) {
-				// Store the API key in the Config class
-				Config::SetAPIKey(BString(apiKey));
+				if (fCardPresenter)
+					fCardPresenter->SetAPIKey(BString(apiKey));
 				printf("API key has been set and stored.\n");
 			}
 			break;
@@ -124,7 +97,8 @@ MainWindow::MessageReceived(BMessage* message)
 			BPath path(&directoryRef);
 			path.Append(name);
 			printf("Save requested to: %s\n", path.Path());
-			_SaveFile(path);
+			if (fCardPresenter)
+				fCardPresenter->SaveFile(path);
 			break;
 		}
 		case B_REFS_RECEIVED:
@@ -134,7 +108,8 @@ MainWindow::MessageReceived(BMessage* message)
 
 			BPath path(&ref);
 			printf("Open requested for: %s\n", path.Path());
-			_OpenFile(path);
+			if (fCardPresenter)
+				fCardPresenter->OpenFile(path);
 			break;
 		}
 
@@ -153,9 +128,8 @@ MainWindow::FrameResized(float width, float height)
 {
 	BWindow::FrameResized(width, height);
 
-	// Explicitly tell the card view to relayout
-	if (fCardView)
-		fCardView->RefreshLayout();
+	if (fCardPresenter)
+		fCardPresenter->OnFrameResized();
 }
 
 
@@ -164,16 +138,6 @@ MainWindow::QuitRequested()
 {
 	be_app->PostMessage(B_QUIT_REQUESTED);
 	return true;
-}
-
-
-void
-MainWindow::LoadSpread()
-{
-	if (fCardPresenter) {
-		fCardModel->ClearCurrentSpread();
-		fCardPresenter->LoadThreeCardSpread();
-	}
 }
 
 
@@ -199,89 +163,4 @@ MainWindow::_CreateMenuBar()
 	fileMenu->AddItem(new BMenuItem("Save...", new BMessage(kMsgSave), 'S'));
 
 	fMenuBar->AddItem(fileMenu);
-}
-
-
-void
-MainWindow::_SaveFile(BPath path)
-{
-	BFile file;
-	status_t status = file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-	if (status != B_OK) {
-		printf("Error creating file: %s\n", strerror(status));
-		return;
-	}
-
-	std::vector<CardInfo> cards;
-	fCardModel->GetThreeCardSpread(cards);
-
-	BString content = "Tarot Reading:\n\n";
-	for (size_t i = 0; i < cards.size(); ++i)
-		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
-	content << "\nAI Reading:\n" << fCardPresenter->GetCurrentReading() << "\n";
-
-	file.Write(content.String(), content.Length());
-	file.Unset();
-	printf("File saved successfully to: %s\n", path.Path());
-}
-
-
-void
-MainWindow::_OpenFile(BPath path)
-{
-	BFile file;
-	status_t status = file.SetTo(path.Path(), B_READ_ONLY);
-	if (status != B_OK) {
-		printf("Error opening file: %s\n", strerror(status));
-		return;
-	}
-
-	off_t size;
-	file.GetSize(&size);
-	char* buffer = new char[size + 1];
-	file.Read(buffer, size);
-	buffer[size] = '\0';
-
-	BString content(buffer);
-	delete[] buffer;
-	file.Unset();
-
-	std::vector<CardInfo> loadedCards;
-	BString aiReadingText;
-
-	int32 cardStart = content.FindFirst("Card 1:");
-	if (cardStart != B_ERROR) {
-		for (int i = 0; i < 3; ++i) {
-			BString cardLine;
-			int32 lineEnd = content.FindFirst("\n", cardStart);
-			if (lineEnd != B_ERROR) {
-				content.CopyInto(cardLine, cardStart, lineEnd - cardStart);
-				cardLine.Remove(0, cardLine.FindFirst(":") + 2);
-				cardLine.Trim();
-
-				CardInfo info;
-				info.displayName = cardLine;
-				info.resourceID = fCardModel->GetResourceID(cardLine);
-				loadedCards.push_back(info);
-				cardStart = lineEnd + 1;
-			} else {
-				break;
-			}
-		}
-	}
-
-	int32 aiReadingStart = content.FindFirst("AI Reading:");
-	if (aiReadingStart != B_ERROR) {
-		aiReadingStart = content.FindFirst("\n", aiReadingStart) + 1;
-		aiReadingText = content.String() + aiReadingStart;
-		aiReadingText.Trim();
-	}
-
-	if (loadedCards.size() == 3) {
-		fCardModel->SetThreeCardSpread(loadedCards);
-		fCardView->DisplayCards(loadedCards);
-		fCardView->DisplayReading(aiReadingText);
-	} else {
-		printf("Error: Could not parse 3 cards from file.\n");
-	}
 }

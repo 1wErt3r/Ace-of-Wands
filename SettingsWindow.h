@@ -15,6 +15,7 @@ public:
 	virtual ~SettingsWindow();
 
 	void MessageReceived(BMessage* msg);
+	void AttachedToWindow();
 
 private:
 	BTextControl* fAPIKeyInput;
