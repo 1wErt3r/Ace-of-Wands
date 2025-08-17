@@ -22,7 +22,7 @@ CardView::CardView(BRect frame)
 	fCardWidth(150),
 	fCardHeight(210), // More proportional to tarot card aspect ratio
 	fLabelHeight(40), // Increased for better text display
-	fCardAreaHeight(0),
+	fReadingAreaWidth(0),
 	fReadingView(NULL),
 	fScrollView(NULL),
 	fSpread(THREE_CARD)
@@ -120,7 +120,7 @@ CardView::Draw(BRect updateRect)
 
 	// Define area for cards (reading area is handled by the scroll view)
 	BRect bounds = Bounds();
-	BRect cardArea(bounds.left, bounds.top, bounds.right, bounds.top + fCardAreaHeight);
+	BRect cardArea(bounds.left, bounds.top, bounds.right - fReadingAreaWidth, bounds.bottom);
 
 	// Draw cards in the top area
 	for (int i = 0; i < fCards.size(); i++) {
@@ -309,13 +309,20 @@ CardView::LayoutThreeCardSpread()
 	BRect bounds = Bounds();
 	float totalWidth = bounds.Width();
 
+	if (!fReading.IsEmpty())
+		fReadingAreaWidth = totalWidth * 0.3;
+	else
+		fReadingAreaWidth = 0;
+
+	float cardAreaWidth = totalWidth - fReadingAreaWidth;
+
 	// Simplified responsive design - always use 3 columns for the spread
 	int cardsPerRow = fCards.size(); // Keep all cards in one row for the spread
 	float marginX = 20;
 	float marginY = 20;
 
 	// Calculate available space for cards
-	float availableWidth = totalWidth - (marginX * 2);
+	float availableWidth = cardAreaWidth - (marginX * 2);
 	float cardSpacing = 20.0f;
 
 	// Calculate card dimensions
@@ -335,23 +342,14 @@ CardView::LayoutThreeCardSpread()
 	if (fCardHeight < 140)
 		fCardHeight = 140;
 
-	float minRequiredCardAreaHeight = fCardHeight + fLabelHeight + (2 * marginY);
-
-	if (fCards.size() == 0 && fReading.IsEmpty()) {
-		fCardAreaHeight = bounds.Height(); // Cards take 100% height if no cards and no reading
-	} else {
-		// Ensure enough space for cards, but also reserve 30% for reading if present
-		fCardAreaHeight = std::max(minRequiredCardAreaHeight, bounds.Height() * 0.7f);
-	}
-
-	float totalHeight = fCardAreaHeight;
+	float totalHeight = bounds.Height();
 
 	if (fCards.size() == 0)
 		return;
 
 	// Position cards in a row (centered vertically within the top area)
 	float totalRowWidth = (fCardWidth * cardsPerRow) + (cardSpacing * (cardsPerRow - 1));
-	float rowStartX = (totalWidth - totalRowWidth) / 2;
+	float rowStartX = (cardAreaWidth - totalRowWidth) / 2;
 	float contentStartY = (totalHeight - fCardHeight - fLabelHeight) / 2;
 
 	for (int i = 0; i < fCards.size(); i++) {
@@ -383,10 +381,17 @@ CardView::LayoutTreeOfLifeSpread()
 	float totalWidth = bounds.Width();
 	float totalHeight = bounds.Height();
 
+	if (!fReading.IsEmpty())
+		fReadingAreaWidth = totalWidth * 0.3;
+	else
+		fReadingAreaWidth = 0;
+
+	float cardAreaWidth = totalWidth - fReadingAreaWidth;
+
 	float marginX = 20;
 	float marginY = 20;
 
-	float availableWidth = totalWidth - (marginX * 2);
+	float availableWidth = cardAreaWidth - (marginX * 2);
 	float availableHeight = totalHeight - (marginY * 2);
 
 	fCardWidth = availableWidth / 4.5;
@@ -397,24 +402,22 @@ CardView::LayoutTreeOfLifeSpread()
 
 	// Positions for the 10 cards in the Tree of Life spread
 	BPoint positions[10];
-	positions[0] = BPoint(totalWidth / 2, marginY + fCardHeight / 2);
-	positions[1] = BPoint(totalWidth / 4, marginY + fCardHeight * 1.5);
-	positions[2] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 1.5);
-	positions[3] = BPoint(totalWidth / 4, marginY + fCardHeight * 2.5);
-	positions[4] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 2.5);
-	positions[5] = BPoint(totalWidth / 2, marginY + fCardHeight * 2.5);
-	positions[6] = BPoint(totalWidth / 4, marginY + fCardHeight * 3.5);
-	positions[7] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 3.5);
-	positions[8] = BPoint(totalWidth / 2, marginY + fCardHeight * 3.5);
-	positions[9] = BPoint(totalWidth / 2, marginY + fCardHeight * 4.5);
+	positions[0] = BPoint(cardAreaWidth / 2, marginY + fCardHeight / 2);
+	positions[1] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 1.5);
+	positions[2] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 1.5);
+	positions[3] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 2.5);
+	positions[4] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 2.5);
+	positions[5] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 2.5);
+	positions[6] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 3.5);
+	positions[7] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 3.5);
+	positions[8] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 3.5);
+	positions[9] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 4.5);
 
 	for (int i = 0; i < 10; i++) {
 		float x = positions[i].x - fCardWidth / 2;
 		float y = positions[i].y - fCardHeight / 2;
 		fCards[i].frame.Set(x, y, x + fCardWidth, y + fCardHeight);
 	}
-
-	fCardAreaHeight = totalHeight;
 }
 
 
@@ -425,9 +428,10 @@ CardView::LayoutReadingArea()
 		return;
 
 	BRect bounds = Bounds();
+	float readingAreaWidth = bounds.Width() * 0.3; // 30% for the reading area
 
-	// Reading area takes the bottom 30% of the view
-	BRect readingArea(bounds.left, bounds.top + fCardAreaHeight, bounds.right, bounds.bottom);
+	// Reading area takes the right 30% of the view
+	BRect readingArea(bounds.right - readingAreaWidth, bounds.top, bounds.right, bounds.bottom);
 
 	// Set the scroll view to fill the reading area
 	fScrollView->MoveTo(readingArea.left, readingArea.top);

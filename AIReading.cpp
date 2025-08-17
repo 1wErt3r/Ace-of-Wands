@@ -42,19 +42,29 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 	if (spreadType == THREE_CARD) {
 		prompt = "Provide a tarot card reading for the following three cards drawn in a simple "
 				 "spread: ";
-	} else {
+		for (size_t i = 0; i < cards.size(); ++i)
+			prompt << "\n- " << cards[i].displayName;
+	} else if (spreadType == TREE_OF_LIFE) {
 		prompt = "Provide a tarot card reading for the following ten cards drawn in a Tree of Life "
 				 "spread: ";
+		const char* positions[] = {"1. Kether (The Crown) - Highest spiritual aspirations",
+			"2. Chokmah (Wisdom) - Spiritual potential realized",
+			"3. Binah (Understanding) - Spiritual limitations and restrictions",
+			"4. Chesed (Mercy) - Constructive influences and prosperity",
+			"5. Geburah (Severity) - Destructive influences and misuse of power",
+			"6. Tiphareth (Beauty) - Your true self, the heart of the matter",
+			"7. Netzach (Victory) - Your emotional state, love, and passion",
+			"8. Hod (Splendor) - Your intellectual state, communication, and work",
+			"9. Yesod (Foundation) - Your unconscious state, intuition, and dreams",
+			"10. Malkuth (Kingdom) - The final outcome and material manifestation"};
+		for (size_t i = 0; i < cards.size() && i < 10; ++i)
+			prompt << "\n- " << positions[i] << ": " << cards[i].displayName;
 	}
 
-	for (size_t i = 0; i < cards.size(); i++) {
-		if (i > 0)
-			prompt += ", ";
-		prompt += cards[i].displayName;
-	}
-
-	prompt += ". Give a brief, insightful reading focusing on the combined meaning of these cards. "
+	prompt << ". Give a brief, insightful reading focusing on the combined meaning of these cards. "
 			  "Keep the response to 3-4 sentences. Do not use markdown or any special formatting.";
+
+	printf("AI Prompt: %s\n", prompt.String());
 
 	// Initialize curl
 	CURL* curl = curl_easy_init();

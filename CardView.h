@@ -48,6 +48,6 @@ private:
 	float fCardWidth;
 	float fCardHeight;
 	float fLabelHeight;
-	float fCardAreaHeight;
+	float fReadingAreaWidth;
 	SpreadType fSpread;
 };
