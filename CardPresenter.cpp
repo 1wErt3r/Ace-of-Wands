@@ -16,9 +16,11 @@ CardPresenter::CardPresenter()
 	fModel(new CardModel()),
 	fView(new CardView(BRect(0, 0, 0, 0))),
 	fReading(nullptr),
-	fCurrentReading("")
+	fCurrentReading(""),
+	fSpread(Config::GetSpread()) // Initialize from Config's in-memory state
 {
 	fModel->Initialize();
+	fView->SetSpread(fSpread);
 }
 
 
@@ -54,10 +56,30 @@ CardPresenter::SetAPIKey(const BString& apiKey)
 
 
 void
+CardPresenter::SetSpread(const BString& spreadName)
+{
+	SpreadType newSpread;
+	if (spreadName == "Three Card")
+		newSpread = THREE_CARD;
+	else if (spreadName == "Tree of Life")
+		newSpread = TREE_OF_LIFE;
+	else
+		return; // Should not happen
+
+	fSpread = newSpread;
+	Config::SetSpread(newSpread); // Update the global in-memory configuration
+	fView->SetSpread(newSpread); // Update the view
+}
+
+
+void
 CardPresenter::NewReading()
 {
 	fModel->ClearCurrentSpread();
-	LoadThreeCardSpread();
+	if (fSpread == THREE_CARD)
+		LoadThreeCardSpread();
+	else if (fSpread == TREE_OF_LIFE)
+		LoadTreeOfLifeSpread();
 }
 
 
@@ -79,9 +101,11 @@ CardPresenter::SaveFile(const BPath& path)
 	}
 
 	std::vector<CardInfo> cards;
-	fModel->GetThreeCardSpread(cards);
+	fModel->GetCardSpread(cards,
+		fSpread == THREE_CARD ? Config::kThreeCardSpreadCount : Config::kTreeOfLifeSpreadCount);
 
 	BString content = "Tarot Reading:\n\n";
+	content << "Spread: " << (fSpread == THREE_CARD ? "Three Card" : "Tree of Life") << "\n\n";
 	for (size_t i = 0; i < cards.size(); ++i)
 		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
 	content << "\nAI Reading:\n" << GetCurrentReading() << "\n";
@@ -114,10 +138,30 @@ CardPresenter::OpenFile(const BPath& path)
 
 	std::vector<CardInfo> loadedCards;
 	BString aiReadingText;
+	BString spreadLine; // Moved declaration here
+
+	int32 spreadStart = content.FindFirst("Spread:");
+	if (spreadStart != B_ERROR) {
+		int32 spreadEnd = content.FindFirst("\n", spreadStart);
+		content.CopyInto(spreadLine, spreadStart, spreadEnd - spreadStart);
+		spreadLine.Remove(0, spreadLine.FindFirst(":") + 2);
+		spreadLine.Trim();
+		SetSpread(spreadLine);
+	} else {
+		// If "Spread:" is not found, assume it's a Three Card spread for backward compatibility
+		spreadLine = "Three Card";
+		SetSpread(spreadLine);
+	}
 
 	int32 cardStart = content.FindFirst("Card 1:");
 	if (cardStart != B_ERROR) {
-		for (int i = 0; i < 3; ++i) {
+		int numCards = 0;
+		if (spreadLine == "Three Card")
+			numCards = Config::kThreeCardSpreadCount;
+		else if (spreadLine == "Tree of Life")
+			numCards = Config::kTreeOfLifeSpreadCount;
+
+		for (int i = 0; i < numCards; ++i) {
 			BString cardLine;
 			int32 lineEnd = content.FindFirst("\n", cardStart);
 			if (lineEnd != B_ERROR) {
@@ -143,12 +187,19 @@ CardPresenter::OpenFile(const BPath& path)
 		aiReadingText.Trim();
 	}
 
-	if (loadedCards.size() == 3) {
-		fModel->SetThreeCardSpread(loadedCards);
+	int32 expectedCardCount = 0;
+	if (spreadLine == "Three Card")
+		expectedCardCount = Config::kThreeCardSpreadCount;
+	else if (spreadLine == "Tree of Life")
+		expectedCardCount = Config::kTreeOfLifeSpreadCount;
+
+	if (loadedCards.size() == expectedCardCount) {
+		fModel->SetCardSpread(loadedCards);
 		fView->DisplayCards(loadedCards);
 		fView->DisplayReading(aiReadingText);
 	} else {
-		printf("Error: Could not parse 3 cards from file.\n");
+		printf("Error: Could not parse cards from file. Expected %d cards, found %d.\n",
+			expectedCardCount, (int)loadedCards.size());
 	}
 }
 
@@ -158,7 +209,7 @@ CardPresenter::LoadThreeCardSpread()
 {
 	printf("Loading three card spread\n");
 	std::vector<CardInfo> cards;
-	fModel->GetThreeCardSpread(cards);
+	fModel->GetCardSpread(cards, Config::kThreeCardSpreadCount);
 	printf("Got %d cards from model\n", (int)cards.size());
 	fView->DisplayCards(cards);
 
@@ -168,7 +219,7 @@ CardPresenter::LoadThreeCardSpread()
 	// Launch asynchronous task to get the reading
 	fReadingFuture = std::async(std::launch::async, [this, cards]() {
 		// Add a small delay to simulate network request
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(Config::kAPITimeout));
 
 		BString reading;
 		if (Config::GetAPIKey().IsEmpty()) {
@@ -179,7 +230,45 @@ CardPresenter::LoadThreeCardSpread()
 			reading = fReading->GetInterpretation();
 		} else {
 			// Get an AI reading for the cards
-			reading = AIReading::GetReading(cards);
+			reading = AIReading::GetReading(cards, fSpread);
+		}
+
+		fCurrentReading = reading;
+		printf("Reading: %s\n", reading.String());
+
+		// Update the UI with the reading in a thread-safe manner
+		fView->UpdateReading(reading);
+	});
+}
+
+
+void
+CardPresenter::LoadTreeOfLifeSpread()
+{
+	printf("Loading Tree of Life spread\n");
+	std::vector<CardInfo> cards;
+	fModel->GetCardSpread(cards, Config::kTreeOfLifeSpreadCount);
+	printf("Got %d cards from model\n", (int)cards.size());
+	fView->DisplayCards(cards);
+
+	// Show loading message while fetching AI reading
+	fView->DisplayReading("Fetching reading...");
+
+	// Launch asynchronous task to get the reading
+	fReadingFuture = std::async(std::launch::async, [this, cards]() {
+		// Add a small delay to simulate network request
+		std::this_thread::sleep_for(std::chrono::milliseconds(Config::kAPITimeout));
+
+		BString reading;
+		if (Config::GetAPIKey().IsEmpty()) {
+			std::vector<BString> cardNames;
+			for (const auto& card : cards)
+				cardNames.push_back(card.displayName);
+			fReading = new Reading(cardNames);
+			reading = fReading->GetInterpretation();
+		} else {
+			// Get an AI reading for the cards
+			reading = AIReading::GetReading(cards, fSpread);
 		}
 
 		fCurrentReading = reading;

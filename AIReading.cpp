@@ -20,7 +20,7 @@ WriteCallback(void* contents, size_t size, size_t nmemb, std::string* response)
 
 
 BString
-AIReading::GetReading(const std::vector<CardInfo>& cards)
+AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 {
 	// Check if API key is set
 	if (!Config::IsAPIKeySet()) {
@@ -38,17 +38,36 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	}
 
 	// Build the prompt from the card names
-	BString prompt
-		= "Provide a tarot card reading for the following three cards drawn in a simple spread: ";
-
-	for (size_t i = 0; i < cards.size(); i++) {
-		if (i > 0)
-			prompt += ", ";
-		prompt += cards[i].displayName;
+	BString prompt;
+	if (spreadType == THREE_CARD) {
+		prompt = "Provide a tarot card reading for the following three cards drawn in a simple "
+				 "spread: ";
+		for (size_t i = 0; i < cards.size(); ++i)
+			prompt << "\n- " << cards[i].displayName;
+	} else if (spreadType == TREE_OF_LIFE) {
+		prompt = "Provide a tarot card reading for the following ten cards drawn in a Tree of Life "
+				 "spread: ";
+		const char* positions[] = {"1. Kether (The Crown) - Highest spiritual aspirations",
+			"2. Chokmah (Wisdom) - Spiritual potential realized",
+			"3. Binah (Understanding) - Spiritual limitations and restrictions",
+			"4. Chesed (Mercy) - Constructive influences and prosperity",
+			"5. Geburah (Severity) - Destructive influences and misuse of power",
+			"6. Tiphareth (Beauty) - Your true self, the heart of the matter",
+			"7. Netzach (Victory) - Your emotional state, love, and passion",
+			"8. Hod (Splendor) - Your intellectual state, communication, and work",
+			"9. Yesod (Foundation) - Your unconscious state, intuition, and dreams",
+			"10. Malkuth (Kingdom) - The final outcome and material manifestation"};
+		for (size_t i = 0; i < cards.size() && i < 10; ++i)
+			prompt << "\n- " << positions[i] << ": " << cards[i].displayName;
 	}
 
-	prompt += ". Give a brief, insightful reading focusing on the combined meaning of these cards. "
-			  "Keep the response to 3-4 sentences. Do not use markdown or any special formatting.";
+	prompt
+		<< ". Give a detailed, insightful reading focusing on the combined meaning of these cards. "
+		   "Provide a comprehensive interpretation that explores the nuances of the cards' "
+		   "interactions. "
+		   "Keep the response to 5-7 sentences. Do not use markdown or any special formatting.";
+
+	printf("AI Prompt: %s\n", prompt.String());
 
 	// Initialize curl
 	CURL* curl = curl_easy_init();
@@ -60,8 +79,8 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	jsonPayload["model"] = "deepseek-chat";
 	jsonPayload["messages"][0]["role"] = "user";
 	jsonPayload["messages"][0]["content"] = prompt.String();
-	jsonPayload["max_tokens"] = 150;
-	jsonPayload["temperature"] = 0.7;
+	jsonPayload["max_tokens"] = Config::kAPIMaxTokens;
+	jsonPayload["temperature"] = Config::kAPITemperature;
 
 	Json::StreamWriterBuilder builder;
 	builder["indentation"] = ""; // Compact formatting
@@ -82,7 +101,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonString.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L); // 30 second timeout
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, Config::kAPITimeout); // 30 second timeout
 
 	// Perform the request
 	CURLcode res = curl_easy_perform(curl);
@@ -127,6 +146,12 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 		&& jsonResponse["choices"].size() > 0 && jsonResponse["choices"][0].isMember("message")
 		&& jsonResponse["choices"][0]["message"].isMember("content")) {
 		std::string content = jsonResponse["choices"][0]["message"]["content"].asString();
+		// Check if the response was cut off due to max_tokens
+		if (jsonResponse["choices"][0].isMember("finish_reason")
+			&& jsonResponse["choices"][0]["finish_reason"].asString() == "length") {
+			// Append a message indicating the response was cut off
+			content += " [Response truncated due to token limit]";
+		}
 		return BString(content.c_str());
 	}
 

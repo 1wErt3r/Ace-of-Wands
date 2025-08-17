@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "CardPresenter.h"
+#include "CardView.h"
 #include "Config.h"
 #include "SettingsWindow.h"
 
@@ -10,6 +11,7 @@
 #include <Menu.h>
 #include <MenuBar.h>
 #include <MenuItem.h>
+#include <ScrollView.h>
 #include <String.h>
 #include <View.h>
 #include <cstdio>
@@ -17,8 +19,9 @@
 
 MainWindow::MainWindow()
 	:
-	BWindow(BRect(100, 100, 900, 700), "Ace of Wands", B_TITLED_WINDOW,
-		B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
+	BWindow(BRect(Config::kMainWindowLeft, Config::kMainWindowTop, Config::kMainWindowRight,
+				Config::kMainWindowBottom),
+		"Ace of Wands", B_TITLED_WINDOW, B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
 	fMenuBar(NULL),
 	fCardPresenter(NULL),
 	fOpenFilePanel(NULL),
@@ -38,8 +41,12 @@ MainWindow::MainWindow()
 
 	printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
 
-	// Use layout builder to arrange menu bar and card view
-	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardPresenter->GetView());
+	// Create a scroll view for the card view
+	BScrollView* scrollView = new BScrollView("CardScrollView", fCardPresenter->GetView(),
+		B_FOLLOW_ALL_SIDES, false, true, B_FANCY_BORDER);
+
+	// Use layout builder to arrange menu bar and scroll view
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(scrollView);
 }
 
 
@@ -84,6 +91,15 @@ MainWindow::MessageReceived(BMessage* message)
 				if (fCardPresenter)
 					fCardPresenter->SetAPIKey(BString(apiKey));
 				printf("API key has been set and stored.\n");
+			}
+			break;
+		}
+		case kMsgSpreadChanged:
+		{
+			BString spreadName;
+			if (message->FindString("spread", &spreadName) == B_OK) {
+				if (fCardPresenter)
+					fCardPresenter->SetSpread(spreadName);
 			}
 			break;
 		}
