@@ -40,7 +40,7 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	if (item)
 		item->SetMarked(true);
 
-	fSaveButton = new BButton("saveButton", "Save", new BMessage(kMsgSaveAPIKey));
+	fSaveButton = new BButton("saveButton", "OK", new BMessage(kMsgSaveAPIKey));
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
