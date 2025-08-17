@@ -40,7 +40,7 @@ const int Config::kThreeCardSpreadCount = 3;
 const int Config::kTreeOfLifeSpreadCount = 10;
 
 // API Constants
-const int Config::kAPIMaxTokens = 150;
+const int Config::kAPIMaxTokens = 300; // Increased to allow for longer responses
 const double Config::kAPITemperature = 0.7;
 const long Config::kAPITimeout = 30L;
 
@@ -150,7 +150,7 @@ void
 Config::SetSpread(SpreadType spread)
 {
 	sSpread = spread;
-	SaveSpreadToFile(spread);
+	// Removed file saving logic to use in-memory state only
 }
 
 
@@ -158,53 +158,4 @@ SpreadType
 Config::GetSpread()
 {
 	return sSpread;
-}
-
-
-void
-Config::SaveSpreadToFile(SpreadType spread)
-{
-	BPath path;
-	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
-		return;
-
-	path.Append("AceOfWands");
-
-	// Create the directory if it doesn't exist
-	BDirectory dir;
-	if (dir.CreateDirectory(path.Path(), &dir) != B_OK && dir.SetTo(path.Path()) != B_OK)
-		return;
-
-	path.Append("spread.txt");
-
-	BFile file;
-	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
-		int32 value = static_cast<int32>(spread);
-		file.Write(&value, sizeof(value));
-		file.Unset();
-	}
-}
-
-
-SpreadType
-Config::LoadSpreadFromFile()
-{
-	BPath path;
-	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
-		return THREE_CARD;
-
-	path.Append("AceOfWands/spread.txt");
-
-	BFile file;
-	if (file.SetTo(path.Path(), B_READ_ONLY) != B_OK)
-		return THREE_CARD;
-
-	int32 value;
-	if (file.Read(&value, sizeof(value)) == sizeof(value)) {
-		file.Unset();
-		return static_cast<SpreadType>(value);
-	}
-
-	file.Unset();
-	return THREE_CARD;
 }

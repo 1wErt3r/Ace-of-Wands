@@ -2,6 +2,7 @@
 
 #include "CardPresenter.h"
 #include <String.h>
+#include <TextView.h> // Include BTextView
 #include <View.h>
 #include <vector>
 
@@ -44,16 +45,17 @@ private:
 	void LayoutReadingArea();
 	void LayoutThreeCardSpread();
 	void LayoutTreeOfLifeSpread();
-	float CalculateTextHeight(const BString& text, float width);
+	float CalculateTextHeightForTextView(BTextView* textView,
+		const BString& text); // Helper function
 
 	std::vector<CardDisplay> fCards;
-	BString fReading;
+	BTextView* fReadingView; // Use BTextView for multi-line text
+	BString fReading; // Store the reading text to check if it's empty
 	float fCardWidth;
 	float fCardHeight;
 	float fLabelHeight;
 	float fReadingAreaWidth;
 	float fReadingAreaHeight;
 	BRect fPreferredSize;
-	float fTextHeight;
 	SpreadType fSpread;
 };

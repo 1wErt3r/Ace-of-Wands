@@ -17,10 +17,9 @@ CardPresenter::CardPresenter()
 	fView(new CardView(BRect(0, 0, 0, 0))),
 	fReading(nullptr),
 	fCurrentReading(""),
-	fSpread(THREE_CARD)
+	fSpread(Config::GetSpread()) // Initialize from Config's in-memory state
 {
 	fModel->Initialize();
-	fSpread = Config::LoadSpreadFromFile();
 	fView->SetSpread(fSpread);
 }
 
@@ -68,8 +67,8 @@ CardPresenter::SetSpread(const BString& spreadName)
 		return; // Should not happen
 
 	fSpread = newSpread;
-	Config::SetSpread(newSpread); // Update the global configuration
-	fView->SetSpread(fSpread);
+	Config::SetSpread(newSpread); // Update the global in-memory configuration
+	fView->SetSpread(newSpread); // Update the view
 }
 
 

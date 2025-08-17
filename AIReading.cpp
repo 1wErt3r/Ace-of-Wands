@@ -61,8 +61,11 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 			prompt << "\n- " << positions[i] << ": " << cards[i].displayName;
 	}
 
-	prompt << ". Give a brief, insightful reading focusing on the combined meaning of these cards. "
-			  "Keep the response to 3-4 sentences. Do not use markdown or any special formatting.";
+	prompt
+		<< ". Give a detailed, insightful reading focusing on the combined meaning of these cards. "
+		   "Provide a comprehensive interpretation that explores the nuances of the cards' "
+		   "interactions. "
+		   "Keep the response to 5-7 sentences. Do not use markdown or any special formatting.";
 
 	printf("AI Prompt: %s\n", prompt.String());
 
@@ -143,6 +146,12 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 		&& jsonResponse["choices"].size() > 0 && jsonResponse["choices"][0].isMember("message")
 		&& jsonResponse["choices"][0]["message"].isMember("content")) {
 		std::string content = jsonResponse["choices"][0]["message"]["content"].asString();
+		// Check if the response was cut off due to max_tokens
+		if (jsonResponse["choices"][0].isMember("finish_reason")
+			&& jsonResponse["choices"][0]["finish_reason"].asString() == "length") {
+			// Append a message indicating the response was cut off
+			content += " [Response truncated due to token limit]";
+		}
 		return BString(content.c_str());
 	}
 

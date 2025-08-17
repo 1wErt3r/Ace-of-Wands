@@ -12,7 +12,6 @@ public:
 
 	static void SetSpread(SpreadType spread);
 	static SpreadType GetSpread();
-	static SpreadType LoadSpreadFromFile();
 
 	// UI Constants
 	static const float kInitialCardWidth;

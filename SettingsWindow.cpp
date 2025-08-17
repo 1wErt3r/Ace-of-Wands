@@ -35,7 +35,7 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	fSpreadMenuField = new BMenuField("spreadMenuField", "Tarot Spread:", fSpreadMenu);
 
 	// Set the initial value of the spread menu
-	SpreadType spread = Config::LoadSpreadFromFile();
+	SpreadType spread = Config::GetSpread(); // Use in-memory state
 	BMenuItem* item = fSpreadMenu->ItemAt(static_cast<int32>(spread));
 	if (item)
 		item->SetMarked(true);
