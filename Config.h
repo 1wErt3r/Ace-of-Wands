@@ -13,6 +13,9 @@ public:
 	static void SetSpread(SpreadType spread);
 	static SpreadType GetSpread();
 
+	static void SetLogReadings(bool logReadings);
+	static bool GetLogReadings();
+
 	static void SaveSettingsToFile();
 	static void LoadSettingsFromFile();
 
@@ -64,5 +67,7 @@ public:
 private:
 	static BString sAPIKey;
 	static SpreadType sSpread;
+	static bool sLogReadings;
 	static void SaveAPIKeyToFile(const BString& apiKey);
+	static void RegisterFileWithMime(const char* path, const char* mimeType);
 };

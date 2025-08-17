@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CardModel.h"
 #include "Reading.h"
 #include <Path.h>
 #include <String.h>
@@ -31,6 +32,7 @@ public:
 private:
 	void LoadThreeCardSpread();
 	void LoadTreeOfLifeSpread();
+	void SaveReadingToFile(const std::vector<CardInfo>& cards, const BString& reading);
 
 	CardModel* fModel;
 	CardView* fView;
