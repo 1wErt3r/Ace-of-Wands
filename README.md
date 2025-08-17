@@ -36,6 +36,7 @@ The application follows an MVP architectural pattern to separate concerns:
 
 ### Prerequisites
 -   Haiku OS development environment.
+-	You need the `curl` and `jsoncpp` headers. Install with `pkgman install curl_devel jsoncpp_devel`.
 
 ### Building the Application
 The application can be built using the provided `Makefile`. Navigate to the project root directory in a Haiku terminal and run:

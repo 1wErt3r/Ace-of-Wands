@@ -48,12 +48,12 @@ CardModel::Initialize()
 		printf("  Resource %d: Type: %c%c%c%c, ID: %d, Name: %s, Size: %lu\n", count,
 			(char)(type >> 24), (char)(type >> 16), (char)(type >> 8), (char)type, id, name, size);
 
-		if (type == 'BBMP' && BString(name).IFindLast(".jpg") != B_ERROR)
+		if (type == 'BBMP' && BString(name).IFindLast(".webp") != B_ERROR)
 			fCardResources.push_back({id, BString(name)});
 		count++;
 	}
 
-	printf("Found %lu JPG resources.\n", fCardResources.size());
+	printf("Found %lu WebP resources.\n", fCardResources.size());
 
 	return fCardResources.size() > 0 ? B_OK : B_ERROR;
 }
@@ -106,7 +106,7 @@ CardModel::FormatCardName(const BString& resourceName)
 {
 	// Remove file extension
 	BString name = resourceName;
-	int32 extIndex = name.IFindLast(".jpg");
+	int32 extIndex = name.IFindLast(".webp");
 	if (extIndex != B_ERROR)
 		name.Truncate(extIndex);
 
