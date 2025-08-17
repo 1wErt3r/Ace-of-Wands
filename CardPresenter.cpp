@@ -59,10 +59,16 @@ CardPresenter::SetAPIKey(const BString& apiKey)
 void
 CardPresenter::SetSpread(const BString& spreadName)
 {
+	SpreadType newSpread;
 	if (spreadName == "Three Card")
-		fSpread = THREE_CARD;
+		newSpread = THREE_CARD;
 	else if (spreadName == "Tree of Life")
-		fSpread = TREE_OF_LIFE;
+		newSpread = TREE_OF_LIFE;
+	else
+		return; // Should not happen
+
+	fSpread = newSpread;
+	Config::SetSpread(newSpread); // Update the global configuration
 	fView->SetSpread(fSpread);
 }
 
@@ -133,21 +139,29 @@ CardPresenter::OpenFile(const BPath& path)
 
 	std::vector<CardInfo> loadedCards;
 	BString aiReadingText;
+	BString spreadLine; // Moved declaration here
 
 	int32 spreadStart = content.FindFirst("Spread:");
 	if (spreadStart != B_ERROR) {
 		int32 spreadEnd = content.FindFirst("\n", spreadStart);
-		BString spreadLine;
 		content.CopyInto(spreadLine, spreadStart, spreadEnd - spreadStart);
 		spreadLine.Remove(0, spreadLine.FindFirst(":") + 2);
 		spreadLine.Trim();
+		SetSpread(spreadLine);
+	} else {
+		// If "Spread:" is not found, assume it's a Three Card spread for backward compatibility
+		spreadLine = "Three Card";
 		SetSpread(spreadLine);
 	}
 
 	int32 cardStart = content.FindFirst("Card 1:");
 	if (cardStart != B_ERROR) {
-		int numCards = (fSpread == THREE_CARD) ? Config::kThreeCardSpreadCount
-											   : Config::kTreeOfLifeSpreadCount;
+		int numCards = 0;
+		if (spreadLine == "Three Card")
+			numCards = Config::kThreeCardSpreadCount;
+		else if (spreadLine == "Tree of Life")
+			numCards = Config::kTreeOfLifeSpreadCount;
+
 		for (int i = 0; i < numCards; ++i) {
 			BString cardLine;
 			int32 lineEnd = content.FindFirst("\n", cardStart);
@@ -174,14 +188,19 @@ CardPresenter::OpenFile(const BPath& path)
 		aiReadingText.Trim();
 	}
 
-	if (loadedCards.size()
-		== (fSpread == THREE_CARD ? Config::kThreeCardSpreadCount
-								  : Config::kTreeOfLifeSpreadCount)) {
+	int32 expectedCardCount = 0;
+	if (spreadLine == "Three Card")
+		expectedCardCount = Config::kThreeCardSpreadCount;
+	else if (spreadLine == "Tree of Life")
+		expectedCardCount = Config::kTreeOfLifeSpreadCount;
+
+	if (loadedCards.size() == expectedCardCount) {
 		fModel->SetCardSpread(loadedCards);
 		fView->DisplayCards(loadedCards);
 		fView->DisplayReading(aiReadingText);
 	} else {
-		printf("Error: Could not parse cards from file.\n");
+		printf("Error: Could not parse cards from file. Expected %d cards, found %d.\n",
+			expectedCardCount, (int)loadedCards.size());
 	}
 }
 
