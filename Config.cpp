@@ -3,6 +3,7 @@
 #include <Directory.h>
 #include <File.h>
 #include <FindDirectory.h>
+#include <Message.h>
 #include <Path.h>
 #include <stdio.h>
 #include <stdlib.h> // for getenv
@@ -150,7 +151,8 @@ void
 Config::SetSpread(SpreadType spread)
 {
 	sSpread = spread;
-	// Removed file saving logic to use in-memory state only
+	// Save the spread to a settings file using BMessage
+	SaveSettingsToFile();
 }
 
 
@@ -158,4 +160,58 @@ SpreadType
 Config::GetSpread()
 {
 	return sSpread;
+}
+
+
+void
+Config::SaveSettingsToFile()
+{
+	BPath path;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
+		return;
+
+	path.Append("AceOfWands");
+
+	// Create the directory if it doesn't exist
+	BDirectory dir;
+	if (dir.CreateDirectory(path.Path(), &dir) != B_OK && dir.SetTo(path.Path()) != B_OK)
+		return;
+
+	path.Append("settings.msg");
+
+	// Create a BMessage to store our settings
+	BMessage settings('AOWS'); // Ace of Wands Settings
+	settings.AddInt32("spread", static_cast<int32>(sSpread));
+
+	// Save the message to file
+	BFile file;
+	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
+		settings.Flatten(&file);
+		file.Unset();
+	}
+}
+
+
+void
+Config::LoadSettingsFromFile()
+{
+	BPath path;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
+		return;
+
+	path.Append("AceOfWands/settings.msg");
+
+	BFile file;
+	if (file.SetTo(path.Path(), B_READ_ONLY) != B_OK)
+		return;
+
+	// Load the message from file
+	BMessage settings;
+	if (settings.Unflatten(&file) == B_OK) {
+		int32 spread;
+		if (settings.FindInt32("spread", &spread) == B_OK)
+			sSpread = static_cast<SpreadType>(spread);
+	}
+
+	file.Unset();
 }

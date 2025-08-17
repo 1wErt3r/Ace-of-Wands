@@ -13,6 +13,9 @@ public:
 	static void SetSpread(SpreadType spread);
 	static SpreadType GetSpread();
 
+	static void SaveSettingsToFile();
+	static void LoadSettingsFromFile();
+
 	// UI Constants
 	static const float kInitialCardWidth;
 	static const float kInitialCardHeight;
@@ -62,5 +65,4 @@ private:
 	static BString sAPIKey;
 	static SpreadType sSpread;
 	static void SaveAPIKeyToFile(const BString& apiKey);
-	static void SaveSpreadToFile(SpreadType spread);
 };

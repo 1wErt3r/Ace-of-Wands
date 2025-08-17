@@ -4,6 +4,9 @@
 
 #include <Alert.h>
 #include <Button.h>
+#include <Catalog.h>
+#include <GroupLayout.h>
+#include <GroupView.h>
 #include <LayoutBuilder.h>
 #include <MenuField.h>
 #include <MenuItem.h>
@@ -11,6 +14,9 @@
 #include <StringView.h>
 #include <TextControl.h>
 #include <cstdio>
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SettingsWindow"
 
 
 SettingsWindow::SettingsWindow(BWindow* owner)
@@ -42,16 +48,25 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 
 	fSaveButton = new BButton("saveButton", "OK", new BMessage(kMsgSaveAPIKey));
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	// Create form groups for better organization
+	BGroupView* apiKeyGroup = new BGroupView("API Key", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupLayout* apiKeyLayout = apiKeyGroup->GroupLayout();
+	apiKeyLayout->AddView(fInstructions);
+	apiKeyLayout->AddView(fAPIKeyInput);
+
+	BGroupView* spreadGroup = new BGroupView("Spread Settings", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupLayout* spreadLayout = spreadGroup->GroupLayout();
+	spreadLayout->AddView(fSpreadMenuField);
+
+	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fInstructions)
-		.Add(fAPIKeyInput)
-		.Add(fSpreadMenuField)
-		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
+		.Add(apiKeyGroup)
+		.Add(spreadGroup)
+		.AddGroup(B_HORIZONTAL)
 		.AddGlue()
 		.Add(fSaveButton)
 		.End()
-		.Layout();
+		.End();
 }
 
 
