@@ -76,8 +76,8 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 	jsonPayload["model"] = "deepseek-chat";
 	jsonPayload["messages"][0]["role"] = "user";
 	jsonPayload["messages"][0]["content"] = prompt.String();
-	jsonPayload["max_tokens"] = 150;
-	jsonPayload["temperature"] = 0.7;
+	jsonPayload["max_tokens"] = Config::kAPIMaxTokens;
+	jsonPayload["temperature"] = Config::kAPITemperature;
 
 	Json::StreamWriterBuilder builder;
 	builder["indentation"] = ""; // Compact formatting
@@ -98,7 +98,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonString.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L); // 30 second timeout
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, Config::kAPITimeout); // 30 second timeout
 
 	// Perform the request
 	CURLcode res = curl_easy_perform(curl);

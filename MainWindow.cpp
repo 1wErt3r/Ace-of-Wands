@@ -17,8 +17,9 @@
 
 MainWindow::MainWindow()
 	:
-	BWindow(BRect(100, 100, 900, 700), "Ace of Wands", B_TITLED_WINDOW,
-		B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
+	BWindow(BRect(Config::kMainWindowLeft, Config::kMainWindowTop, Config::kMainWindowRight,
+				Config::kMainWindowBottom),
+		"Ace of Wands", B_TITLED_WINDOW, B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
 	fMenuBar(NULL),
 	fCardPresenter(NULL),
 	fOpenFilePanel(NULL),

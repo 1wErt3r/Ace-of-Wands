@@ -1,5 +1,6 @@
 #include "CardView.h"
 #include "CardModel.h"
+#include "Config.h"
 
 #include <Application.h>
 #include <Bitmap.h>
@@ -19,9 +20,9 @@
 CardView::CardView(BRect frame)
 	:
 	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
-	fCardWidth(150),
-	fCardHeight(210), // More proportional to tarot card aspect ratio
-	fLabelHeight(40), // Increased for better text display
+	fCardWidth(Config::kInitialCardWidth),
+	fCardHeight(Config::kInitialCardHeight), // More proportional to tarot card aspect ratio
+	fLabelHeight(Config::kInitialLabelHeight), // Increased for better text display
 	fReadingAreaWidth(0),
 	fReadingView(NULL),
 	fScrollView(NULL),
@@ -31,7 +32,7 @@ CardView::CardView(BRect frame)
 
 	// Set a better font for card labels
 	BFont font;
-	font.SetSize(18.0f); // Increased text size
+	font.SetSize(Config::kInitialFontSize); // Increased text size
 	SetFont(&font);
 
 	// Create the text view for readings
@@ -101,7 +102,7 @@ CardView::Draw(BRect updateRect)
 		const char* message = "Choose New Reading from the Ace of Wands menu to get started";
 		BFont font;
 		GetFont(&font);
-		font.SetSize(18);
+		font.SetSize(Config::kInitialFontSize);
 		SetFont(&font);
 
 		font_height fh;
@@ -135,9 +136,9 @@ CardView::Draw(BRect updateRect)
 			// Scale image to fit card frame while maintaining aspect ratio
 			// Leave a small margin around the image
 			BRect imageArea = cardFrame;
-			imageArea.InsetBy(10, 10);
+			imageArea.InsetBy(Config::kImageInset, Config::kImageInset);
 			// Reduce inset at bottom to leave space for label
-			imageArea.bottom -= fLabelHeight - 10;
+			imageArea.bottom -= fLabelHeight - Config::kLabelHeightMargin;
 
 			float scaleX = imageArea.Width() / imageFrame.Width();
 			float scaleY = imageArea.Height() / imageFrame.Height();
@@ -169,10 +170,11 @@ CardView::Draw(BRect updateRect)
 		SetLowColor(ui_color(B_CONTROL_BACKGROUND_COLOR));
 
 		// Ensure text is centered and fits in label area
-		if (stringWidth > cardFrame.Width() - 10) {
+		if (stringWidth > cardFrame.Width() - Config::kCardWidthMargin) {
 			// Truncate if too long
 			BString truncatedName = displayName;
-			while (StringWidth(truncatedName.String()) > cardFrame.Width() - 20
+			while (StringWidth(truncatedName.String())
+					> cardFrame.Width() - (2 * Config::kCardWidthMargin)
 				&& truncatedName.Length() > 3) {
 				truncatedName.Truncate(truncatedName.Length() - 4);
 				truncatedName.Append("...");
@@ -318,29 +320,29 @@ CardView::LayoutThreeCardSpread()
 
 	// Simplified responsive design - always use 3 columns for the spread
 	int cardsPerRow = fCards.size(); // Keep all cards in one row for the spread
-	float marginX = 20;
-	float marginY = 20;
+	float marginX = Config::kMarginX;
+	float marginY = Config::kMarginY;
 
 	// Calculate available space for cards
 	float availableWidth = cardAreaWidth - (marginX * 2);
-	float cardSpacing = 20.0f;
+	float cardSpacing = Config::kCardSpacing;
 
 	// Calculate card dimensions
 	fCardWidth = (availableWidth - (cardSpacing * (cardsPerRow - 1))) / cardsPerRow;
-	fCardHeight = fCardWidth * 1.4f; // 3.5/2.5 = 1.4
+	fCardHeight = fCardWidth * Config::kCardAspectRatio; // 3.5/2.5 = 1.4
 
 	// Make label height responsive to card size
-	fLabelHeight = fCardHeight * 0.15f; // 15% of card height for label
-	if (fLabelHeight < 30)
-		fLabelHeight = 30; // Minimum label height
-	if (fLabelHeight > 60)
-		fLabelHeight = 60; // Maximum label height
+	fLabelHeight = fCardHeight * Config::kLabelHeightRatio; // 15% of card height for label
+	if (fLabelHeight < Config::kMinLabelHeight)
+		fLabelHeight = Config::kMinLabelHeight; // Minimum label height
+	if (fLabelHeight > Config::kMaxLabelHeight)
+		fLabelHeight = Config::kMaxLabelHeight; // Maximum label height
 
 	// Only keep minimum size limits to ensure cards remain visible
-	if (fCardWidth < 100)
-		fCardWidth = 100;
-	if (fCardHeight < 140)
-		fCardHeight = 140;
+	if (fCardWidth < Config::kMinCardWidth)
+		fCardWidth = Config::kMinCardWidth;
+	if (fCardHeight < Config::kMinCardHeight)
+		fCardHeight = Config::kMinCardHeight;
 
 	float totalHeight = bounds.Height();
 
@@ -364,11 +366,11 @@ CardView::LayoutThreeCardSpread()
 	// Update font size based on label height
 	BFont font;
 	GetFont(&font);
-	float fontSize = fLabelHeight * 0.5f; // Font size is 50% of label height
-	if (fontSize < 12)
-		fontSize = 12; // Minimum font size
-	if (fontSize > 24)
-		fontSize = 24; // Maximum font size
+	float fontSize = fLabelHeight * Config::kFontSizeRatio; // Font size is 50% of label height
+	if (fontSize < Config::kMinFontSize)
+		fontSize = Config::kMinFontSize; // Minimum font size
+	if (fontSize > Config::kMaxFontSize)
+		fontSize = Config::kMaxFontSize; // Maximum font size
 	font.SetSize(fontSize);
 	SetFont(&font);
 }
@@ -382,20 +384,20 @@ CardView::LayoutTreeOfLifeSpread()
 	float totalHeight = bounds.Height();
 
 	if (!fReading.IsEmpty())
-		fReadingAreaWidth = totalWidth * 0.3;
+		fReadingAreaWidth = totalWidth * Config::kReadingAreaWidthRatio;
 	else
 		fReadingAreaWidth = 0;
 
 	float cardAreaWidth = totalWidth - fReadingAreaWidth;
 
-	float marginX = 20;
-	float marginY = 20;
+	float marginX = Config::kMarginX;
+	float marginY = Config::kMarginY;
 
 	float availableWidth = cardAreaWidth - (marginX * 2);
 	float availableHeight = totalHeight - (marginY * 2);
 
-	fCardWidth = availableWidth / 4.5;
-	fCardHeight = fCardWidth * 1.4;
+	fCardWidth = availableWidth / Config::kTreeOfLifeCardWidthRatio;
+	fCardHeight = fCardWidth * Config::kCardAspectRatio;
 
 	if (fCards.size() != 10)
 		return;
@@ -428,7 +430,8 @@ CardView::LayoutReadingArea()
 		return;
 
 	BRect bounds = Bounds();
-	float readingAreaWidth = bounds.Width() * 0.3; // 30% for the reading area
+	float readingAreaWidth
+		= bounds.Width() * Config::kReadingAreaWidthRatio; // 30% for the reading area
 
 	// Reading area takes the right 30% of the view
 	BRect readingArea(bounds.right - readingAreaWidth, bounds.top, bounds.right, bounds.bottom);
@@ -440,7 +443,7 @@ CardView::LayoutReadingArea()
 	// Set the text view to be slightly smaller than the scroll view for borders
 	BRect textViewRect = readingArea;
 	textViewRect.OffsetTo(0, 0);
-	textViewRect.InsetBy(10, 10); // Add some padding
+	textViewRect.InsetBy(Config::kReadingAreaInset, Config::kReadingAreaInset); // Add some padding
 
 	// Adjust textRect to account for the scrollbar
 	textViewRect.right -= B_V_SCROLL_BAR_WIDTH;

@@ -15,8 +15,9 @@
 
 SettingsWindow::SettingsWindow(BWindow* owner)
 	:
-	BWindow(BRect(100, 100, 500, 350), "Settings", B_TITLED_WINDOW,
-		B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS),
+	BWindow(BRect(Config::kSettingsWindowLeft, Config::kSettingsWindowTop,
+				Config::kSettingsWindowRight, Config::kSettingsWindowBottom),
+		"Settings", B_TITLED_WINDOW, B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS),
 	fOwnerMessenger(owner)
 {
 	fInstructions = new BStringView("instructions", "Enter your DeepSeek API Key:");
