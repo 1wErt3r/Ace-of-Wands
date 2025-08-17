@@ -334,6 +334,33 @@ CardView::LayoutReadingArea()
 	if (fPreferredSize.Height() < textHeight + 50)
 		fPreferredSize.bottom = fPreferredSize.top + textHeight + 50; // Add some padding
 	// If LayoutCards has already set a larger preferred size, we keep it.
+
+	// Scale the font size of the reading text view based on window width
+	// Calculate font size based on window width - scale from min to max
+	float minWindowWidth = 600.0f; // Minimum window width for min font size
+	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
+	float windowWidth = bounds.Width();
+
+	float fontSize;
+	if (windowWidth <= minWindowWidth) {
+		fontSize = Config::kMinFontSize;
+	} else if (windowWidth >= maxWindowWidth) {
+		fontSize = Config::kMaxFontSize;
+	} else {
+		// Linear interpolation between min and max font sizes
+		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
+		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
+	}
+
+	// Ensure font size doesn't exceed the maximum allowed (24)
+	if (fontSize > Config::kMaxFontSize)
+		fontSize = Config::kMaxFontSize;
+
+	// Apply the calculated font size to the reading text view
+	BFont readingFont;
+	fReadingView->GetFont(&readingFont);
+	readingFont.SetSize(fontSize);
+	fReadingView->SetFontAndColor(&readingFont);
 }
 
 
@@ -547,6 +574,10 @@ CardView::LayoutThreeCardSpread()
 		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
 	}
 
+	// Ensure font size doesn't exceed the maximum allowed (24)
+	if (fontSize > Config::kMaxFontSize)
+		fontSize = Config::kMaxFontSize;
+
 	font.SetSize(fontSize);
 	SetFont(&font);
 }
@@ -625,6 +656,10 @@ CardView::LayoutTreeOfLifeSpread()
 		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
 		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
 	}
+
+	// Ensure font size doesn't exceed the maximum allowed (24)
+	if (fontSize > Config::kMaxFontSize)
+		fontSize = Config::kMaxFontSize;
 
 	font.SetSize(fontSize);
 	SetFont(&font);
