@@ -19,6 +19,8 @@ CardPresenter::CardPresenter()
 	fCurrentReading("")
 {
 	fModel->Initialize();
+	fSpread = Config::LoadSpreadFromFile();
+	fView->SetSpread(fSpread);
 }
 
 
@@ -54,10 +56,24 @@ CardPresenter::SetAPIKey(const BString& apiKey)
 
 
 void
+CardPresenter::SetSpread(const BString& spreadName)
+{
+	if (spreadName == "Three Card")
+		fSpread = THREE_CARD;
+	else if (spreadName == "Tree of Life")
+		fSpread = TREE_OF_LIFE;
+	fView->SetSpread(fSpread);
+}
+
+
+void
 CardPresenter::NewReading()
 {
 	fModel->ClearCurrentSpread();
-	LoadThreeCardSpread();
+	if (fSpread == THREE_CARD)
+		LoadThreeCardSpread();
+	else if (fSpread == TREE_OF_LIFE)
+		LoadTreeOfLifeSpread();
 }
 
 
@@ -79,9 +95,10 @@ CardPresenter::SaveFile(const BPath& path)
 	}
 
 	std::vector<CardInfo> cards;
-	fModel->GetThreeCardSpread(cards);
+	fModel->GetCardSpread(cards, fSpread == THREE_CARD ? 3 : 10);
 
 	BString content = "Tarot Reading:\n\n";
+	content << "Spread: " << (fSpread == THREE_CARD ? "Three Card" : "Tree of Life") << "\n\n";
 	for (size_t i = 0; i < cards.size(); ++i)
 		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
 	content << "\nAI Reading:\n" << GetCurrentReading() << "\n";
@@ -115,9 +132,20 @@ CardPresenter::OpenFile(const BPath& path)
 	std::vector<CardInfo> loadedCards;
 	BString aiReadingText;
 
+	int32 spreadStart = content.FindFirst("Spread:");
+	if (spreadStart != B_ERROR) {
+		int32 spreadEnd = content.FindFirst("\n", spreadStart);
+		BString spreadLine;
+		content.CopyInto(spreadLine, spreadStart, spreadEnd - spreadStart);
+		spreadLine.Remove(0, spreadLine.FindFirst(":") + 2);
+		spreadLine.Trim();
+		SetSpread(spreadLine);
+	}
+
 	int32 cardStart = content.FindFirst("Card 1:");
 	if (cardStart != B_ERROR) {
-		for (int i = 0; i < 3; ++i) {
+		int numCards = (fSpread == THREE_CARD) ? 3 : 10;
+		for (int i = 0; i < numCards; ++i) {
 			BString cardLine;
 			int32 lineEnd = content.FindFirst("\n", cardStart);
 			if (lineEnd != B_ERROR) {
@@ -143,12 +171,12 @@ CardPresenter::OpenFile(const BPath& path)
 		aiReadingText.Trim();
 	}
 
-	if (loadedCards.size() == 3) {
-		fModel->SetThreeCardSpread(loadedCards);
+	if (loadedCards.size() == (fSpread == THREE_CARD ? 3 : 10)) {
+		fModel->SetCardSpread(loadedCards);
 		fView->DisplayCards(loadedCards);
 		fView->DisplayReading(aiReadingText);
 	} else {
-		printf("Error: Could not parse 3 cards from file.\n");
+		printf("Error: Could not parse cards from file.\n");
 	}
 }
 
@@ -158,7 +186,7 @@ CardPresenter::LoadThreeCardSpread()
 {
 	printf("Loading three card spread\n");
 	std::vector<CardInfo> cards;
-	fModel->GetThreeCardSpread(cards);
+	fModel->GetCardSpread(cards, 3);
 	printf("Got %d cards from model\n", (int)cards.size());
 	fView->DisplayCards(cards);
 
@@ -179,7 +207,45 @@ CardPresenter::LoadThreeCardSpread()
 			reading = fReading->GetInterpretation();
 		} else {
 			// Get an AI reading for the cards
-			reading = AIReading::GetReading(cards);
+			reading = AIReading::GetReading(cards, fSpread);
+		}
+
+		fCurrentReading = reading;
+		printf("Reading: %s\n", reading.String());
+
+		// Update the UI with the reading in a thread-safe manner
+		fView->UpdateReading(reading);
+	});
+}
+
+
+void
+CardPresenter::LoadTreeOfLifeSpread()
+{
+	printf("Loading Tree of Life spread\n");
+	std::vector<CardInfo> cards;
+	fModel->GetCardSpread(cards, 10);
+	printf("Got %d cards from model\n", (int)cards.size());
+	fView->DisplayCards(cards);
+
+	// Show loading message while fetching AI reading
+	fView->DisplayReading("Fetching reading...");
+
+	// Launch asynchronous task to get the reading
+	fReadingFuture = std::async(std::launch::async, [this, cards]() {
+		// Add a small delay to simulate network request
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+		BString reading;
+		if (Config::GetAPIKey().IsEmpty()) {
+			std::vector<BString> cardNames;
+			for (const auto& card : cards)
+				cardNames.push_back(card.displayName);
+			fReading = new Reading(cardNames);
+			reading = fReading->GetInterpretation();
+		} else {
+			// Get an AI reading for the cards
+			reading = AIReading::GetReading(cards, fSpread);
 		}
 
 		fCurrentReading = reading;

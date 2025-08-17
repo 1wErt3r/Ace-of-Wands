@@ -24,7 +24,8 @@ CardView::CardView(BRect frame)
 	fLabelHeight(40), // Increased for better text display
 	fCardAreaHeight(0),
 	fReadingView(NULL),
-	fScrollView(NULL)
+	fScrollView(NULL),
+	fSpread(THREE_CARD)
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 
@@ -286,7 +287,24 @@ CardView::RefreshLayout()
 
 
 void
+CardView::SetSpread(SpreadType spread)
+{
+	fSpread = spread;
+}
+
+
+void
 CardView::LayoutCards()
+{
+	if (fSpread == THREE_CARD)
+		LayoutThreeCardSpread();
+	else if (fSpread == TREE_OF_LIFE)
+		LayoutTreeOfLifeSpread();
+}
+
+
+void
+CardView::LayoutThreeCardSpread()
 {
 	BRect bounds = Bounds();
 	float totalWidth = bounds.Width();
@@ -355,6 +373,48 @@ CardView::LayoutCards()
 		fontSize = 24; // Maximum font size
 	font.SetSize(fontSize);
 	SetFont(&font);
+}
+
+
+void
+CardView::LayoutTreeOfLifeSpread()
+{
+	BRect bounds = Bounds();
+	float totalWidth = bounds.Width();
+	float totalHeight = bounds.Height();
+
+	float marginX = 20;
+	float marginY = 20;
+
+	float availableWidth = totalWidth - (marginX * 2);
+	float availableHeight = totalHeight - (marginY * 2);
+
+	fCardWidth = availableWidth / 4.5;
+	fCardHeight = fCardWidth * 1.4;
+
+	if (fCards.size() != 10)
+		return;
+
+	// Positions for the 10 cards in the Tree of Life spread
+	BPoint positions[10];
+	positions[0] = BPoint(totalWidth / 2, marginY + fCardHeight / 2);
+	positions[1] = BPoint(totalWidth / 4, marginY + fCardHeight * 1.5);
+	positions[2] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 1.5);
+	positions[3] = BPoint(totalWidth / 4, marginY + fCardHeight * 2.5);
+	positions[4] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 2.5);
+	positions[5] = BPoint(totalWidth / 2, marginY + fCardHeight * 2.5);
+	positions[6] = BPoint(totalWidth / 4, marginY + fCardHeight * 3.5);
+	positions[7] = BPoint(totalWidth * 3 / 4, marginY + fCardHeight * 3.5);
+	positions[8] = BPoint(totalWidth / 2, marginY + fCardHeight * 3.5);
+	positions[9] = BPoint(totalWidth / 2, marginY + fCardHeight * 4.5);
+
+	for (int i = 0; i < 10; i++) {
+		float x = positions[i].x - fCardWidth / 2;
+		float y = positions[i].y - fCardHeight / 2;
+		fCards[i].frame.Set(x, y, x + fCardWidth, y + fCardHeight);
+	}
+
+	fCardAreaHeight = totalHeight;
 }
 
 

@@ -11,6 +11,8 @@ class CardModel;
 class CardView;
 class BView;
 
+enum SpreadType { THREE_CARD, TREE_OF_LIFE };
+
 class CardPresenter {
 public:
 	CardPresenter();
@@ -24,13 +26,16 @@ public:
 	BView* GetView();
 	BString GetAPIKey();
 	void SetAPIKey(const BString& apiKey);
+	void SetSpread(const BString& spreadName);
 
 private:
 	void LoadThreeCardSpread();
+	void LoadTreeOfLifeSpread();
 
 	CardModel* fModel;
 	CardView* fView;
 	std::future<void> fReadingFuture;
 	Reading* fReading;
 	BString fCurrentReading;
+	SpreadType fSpread;
 };

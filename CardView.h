@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CardPresenter.h"
 #include <String.h>
 #include <View.h>
 #include <vector>
@@ -32,10 +33,13 @@ public:
 
 	void ClearCards();
 	void RefreshLayout();
+	void SetSpread(SpreadType spread);
 
 private:
 	void LayoutCards();
 	void LayoutReadingArea();
+	void LayoutThreeCardSpread();
+	void LayoutTreeOfLifeSpread();
 
 	std::vector<CardDisplay> fCards;
 	BString fReading;
@@ -45,4 +49,5 @@ private:
 	float fCardHeight;
 	float fLabelHeight;
 	float fCardAreaHeight;
+	SpreadType fSpread;
 };

@@ -60,7 +60,7 @@ CardModel::Initialize()
 
 
 void
-CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
+CardModel::GetCardSpread(std::vector<CardInfo>& cards, int32 numCards)
 {
 	if (!fCurrentSpread.empty()) {
 		cards = fCurrentSpread;
@@ -69,12 +69,12 @@ CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 
 	cards.clear();
 
-	if (fCardResources.size() < 3)
+	if (fCardResources.size() < numCards)
 		return;
 
-	// Select 3 random cards
+	// Select random cards
 	std::vector<int> selectedIndices;
-	while (selectedIndices.size() < 3) {
+	while (selectedIndices.size() < numCards) {
 		int index = rand() % fCardResources.size();
 
 		// Check if already selected
@@ -91,7 +91,7 @@ CardModel::GetThreeCardSpread(std::vector<CardInfo>& cards)
 	}
 
 	// Create card info for each selected card
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < numCards; i++) {
 		CardInfo info;
 		info.resourceID = fCardResources[selectedIndices[i]].id;
 		info.displayName = FormatCardName(fCardResources[selectedIndices[i]].name);
@@ -188,7 +188,7 @@ CardModel::FormatCardName(const BString& resourceName)
 
 
 void
-CardModel::SetThreeCardSpread(const std::vector<CardInfo>& cards)
+CardModel::SetCardSpread(const std::vector<CardInfo>& cards)
 {
 	fCurrentSpread = cards;
 }

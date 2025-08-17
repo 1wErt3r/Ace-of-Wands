@@ -20,7 +20,7 @@ WriteCallback(void* contents, size_t size, size_t nmemb, std::string* response)
 
 
 BString
-AIReading::GetReading(const std::vector<CardInfo>& cards)
+AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 {
 	// Check if API key is set
 	if (!Config::IsAPIKeySet()) {
@@ -38,8 +38,14 @@ AIReading::GetReading(const std::vector<CardInfo>& cards)
 	}
 
 	// Build the prompt from the card names
-	BString prompt
-		= "Provide a tarot card reading for the following three cards drawn in a simple spread: ";
+	BString prompt;
+	if (spreadType == THREE_CARD) {
+		prompt = "Provide a tarot card reading for the following three cards drawn in a simple "
+				 "spread: ";
+	} else {
+		prompt = "Provide a tarot card reading for the following ten cards drawn in a Tree of Life "
+				 "spread: ";
+	}
 
 	for (size_t i = 0; i < cards.size(); i++) {
 		if (i > 0)

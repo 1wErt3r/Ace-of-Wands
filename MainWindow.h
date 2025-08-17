@@ -13,6 +13,7 @@ const uint32 kMsgSave = kAppMessageBase + 2;
 const uint32 kMsgOpen = kAppMessageBase + 3;
 const uint32 kMsgSettings = kAppMessageBase + 4;
 const uint32 kMsgAPIKeyReceived = kAppMessageBase + 5;
+const uint32 kMsgSpreadChanged = kAppMessageBase + 6;
 
 class MainWindow : public BWindow {
 public:

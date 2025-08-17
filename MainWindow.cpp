@@ -87,6 +87,15 @@ MainWindow::MessageReceived(BMessage* message)
 			}
 			break;
 		}
+		case kMsgSpreadChanged:
+		{
+			BString spreadName;
+			if (message->FindString("spread", &spreadName) == B_OK) {
+				if (fCardPresenter)
+					fCardPresenter->SetSpread(spreadName);
+			}
+			break;
+		}
 		case B_SAVE_REQUESTED:
 		{
 			entry_ref directoryRef;

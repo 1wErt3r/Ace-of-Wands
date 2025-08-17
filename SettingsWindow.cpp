@@ -5,6 +5,9 @@
 #include <Alert.h>
 #include <Button.h>
 #include <LayoutBuilder.h>
+#include <MenuField.h>
+#include <MenuItem.h>
+#include <PopUpMenu.h>
 #include <StringView.h>
 #include <TextControl.h>
 #include <cstdio>
@@ -12,7 +15,7 @@
 
 SettingsWindow::SettingsWindow(BWindow* owner)
 	:
-	BWindow(BRect(100, 100, 500, 300), "Settings", B_TITLED_WINDOW,
+	BWindow(BRect(100, 100, 500, 350), "Settings", B_TITLED_WINDOW,
 		B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS),
 	fOwnerMessenger(owner)
 {
@@ -21,8 +24,20 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	fAPIKeyInput->TextView()->HideTyping(true); // Make it a password field
 
 	// Populate the API key field when the window is created
-	BString apiKey = Config::GetAPIKey();
+	BString apiKey = Config::LoadAPIKeyFromFile();
 	fAPIKeyInput->SetText(apiKey.String());
+
+	fSpreadMenu = new BPopUpMenu("Spread");
+	fSpreadMenu->AddItem(new BMenuItem("Three Card", new BMessage(kMsgSpreadChanged)));
+	fSpreadMenu->AddItem(new BMenuItem("Tree of Life", new BMessage(kMsgSpreadChanged)));
+
+	fSpreadMenuField = new BMenuField("spreadMenuField", "Tarot Spread:", fSpreadMenu);
+
+	// Set the initial value of the spread menu
+	SpreadType spread = Config::LoadSpreadFromFile();
+	BMenuItem* item = fSpreadMenu->ItemAt(static_cast<int32>(spread));
+	if (item)
+		item->SetMarked(true);
 
 	fSaveButton = new BButton("saveButton", "Save", new BMessage(kMsgSaveAPIKey));
 
@@ -30,6 +45,7 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(fInstructions)
 		.Add(fAPIKeyInput)
+		.Add(fSpreadMenuField)
 		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
 		.AddGlue()
 		.Add(fSaveButton)
@@ -49,10 +65,26 @@ SettingsWindow::MessageReceived(BMessage* msg)
 	switch (msg->what) {
 		case kMsgSaveAPIKey:
 		{
+			Config::SetAPIKey(fAPIKeyInput->Text());
+			BMenuItem* item = fSpreadMenu->FindMarked();
+			if (item) {
+				int32 index = fSpreadMenu->IndexOf(item);
+				Config::SetSpread(static_cast<SpreadType>(index));
+			}
 			BMessage reply(kMsgAPIKeyReceived);
 			reply.AddString("apiKey", fAPIKeyInput->Text());
 			fOwnerMessenger.SendMessage(&reply);
 			Quit();
+			break;
+		}
+		case kMsgSpreadChanged:
+		{
+			BMenuItem* item = fSpreadMenu->FindMarked();
+			if (item) {
+				BMessage spreadMsg(kMsgSpreadChanged);
+				spreadMsg.AddString("spread", item->Label());
+				fOwnerMessenger.SendMessage(&spreadMsg);
+			}
 			break;
 		}
 		default:
