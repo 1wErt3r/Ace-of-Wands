@@ -6,8 +6,6 @@
 #include <vector>
 
 class BBitmap;
-class BScrollView;
-class BTextView;
 
 struct CardDisplay {
 	BBitmap* image;
@@ -24,6 +22,12 @@ public:
 	virtual void Draw(BRect updateRect);
 	virtual void FrameResized(float width, float height);
 	virtual void MessageReceived(BMessage* message);
+	virtual void ScrollTo(BPoint where);
+
+	// Override to provide the preferred size for scrolling
+	virtual BSize MinSize();
+	virtual BSize MaxSize();
+	virtual BSize PreferredSize();
 
 	void DisplayCards(const std::vector<class CardInfo>& cards);
 	void DisplayReading(const BString& reading);
@@ -40,14 +44,16 @@ private:
 	void LayoutReadingArea();
 	void LayoutThreeCardSpread();
 	void LayoutTreeOfLifeSpread();
+	float CalculateTextHeight(const BString& text, float width);
 
 	std::vector<CardDisplay> fCards;
 	BString fReading;
-	BTextView* fReadingView;
-	BScrollView* fScrollView;
 	float fCardWidth;
 	float fCardHeight;
 	float fLabelHeight;
 	float fReadingAreaWidth;
+	float fReadingAreaHeight;
+	BRect fPreferredSize;
+	float fTextHeight;
 	SpreadType fSpread;
 };

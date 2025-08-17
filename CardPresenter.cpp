@@ -16,7 +16,8 @@ CardPresenter::CardPresenter()
 	fModel(new CardModel()),
 	fView(new CardView(BRect(0, 0, 0, 0))),
 	fReading(nullptr),
-	fCurrentReading("")
+	fCurrentReading(""),
+	fSpread(THREE_CARD)
 {
 	fModel->Initialize();
 	fSpread = Config::LoadSpreadFromFile();

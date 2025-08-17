@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "CardPresenter.h"
+#include "CardView.h"
 #include "Config.h"
 #include "SettingsWindow.h"
 
@@ -10,6 +11,7 @@
 #include <Menu.h>
 #include <MenuBar.h>
 #include <MenuItem.h>
+#include <ScrollView.h>
 #include <String.h>
 #include <View.h>
 #include <cstdio>
@@ -39,8 +41,12 @@ MainWindow::MainWindow()
 
 	printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
 
-	// Use layout builder to arrange menu bar and card view
-	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(fCardPresenter->GetView());
+	// Create a scroll view for the card view
+	BScrollView* scrollView = new BScrollView("CardScrollView", fCardPresenter->GetView(),
+		B_FOLLOW_ALL_SIDES, false, true, B_FANCY_BORDER);
+
+	// Use layout builder to arrange menu bar and scroll view
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0).Add(fMenuBar).Add(scrollView);
 }
 
 

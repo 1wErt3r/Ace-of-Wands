@@ -19,13 +19,14 @@
 
 CardView::CardView(BRect frame)
 	:
-	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW),
+	BView(frame, "CardView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE),
 	fCardWidth(Config::kInitialCardWidth),
 	fCardHeight(Config::kInitialCardHeight), // More proportional to tarot card aspect ratio
 	fLabelHeight(Config::kInitialLabelHeight), // Increased for better text display
 	fReadingAreaWidth(0),
-	fReadingView(NULL),
-	fScrollView(NULL),
+	fReadingAreaHeight(0),
+	fTextHeight(0),
+	fPreferredSize(frame),
 	fSpread(THREE_CARD)
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
@@ -34,31 +35,12 @@ CardView::CardView(BRect frame)
 	BFont font;
 	font.SetSize(Config::kInitialFontSize); // Increased text size
 	SetFont(&font);
-
-	// Create the text view for readings
-	BRect textRect(0, 0, 1, 1); // Will be resized later
-	fReadingView = new BTextView(textRect, "readingView", textRect, B_FOLLOW_ALL_SIDES);
-	fReadingView->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-	fReadingView->MakeEditable(false); // Make it non-editable
-	fReadingView->MakeSelectable(true); // Allow text selection
-	fReadingView->SetWordWrap(true); // Enable word wrapping
-
-	// Create scroll view for the text view
-	fScrollView = new BScrollView("readingScrollView", fReadingView, B_FOLLOW_ALL_SIDES, false,
-		true, B_FANCY_BORDER); // Horizontal=false, Vertical=true
-
-	// Add the scroll view as a child
-	AddChild(fScrollView);
-
-	// Hide the scroll view until we have content
-	fScrollView->Hide();
 }
 
 
 CardView::~CardView()
 {
 	ClearCards();
-	// fReadingView and fScrollView will be deleted automatically as children
 }
 
 
@@ -119,15 +101,115 @@ CardView::Draw(BRect updateRect)
 		return;
 	}
 
-	// Define area for cards (reading area is handled by the scroll view)
-	BRect bounds = Bounds();
-	BRect cardArea(bounds.left, bounds.top, bounds.right - fReadingAreaWidth, bounds.bottom);
+	// Get the scroll offset
+	BPoint scrollOffset = LeftTop();
 
-	// Draw cards in the top area
+	// Define area for reading text (now on the left)
+	BRect bounds = Bounds();
+	BRect readingArea(bounds.left, bounds.top, bounds.left + fReadingAreaWidth, bounds.bottom);
+	readingArea.OffsetBy(-scrollOffset.x, -scrollOffset.y); // Adjust for scroll offset
+
+	// Draw reading text in the reading area if we have content
+	if (!fReading.IsEmpty() && fReadingAreaWidth > 0) {
+		// Only draw if the reading area intersects with the update rect
+		if (updateRect.Intersects(readingArea)) {
+			// Set up drawing parameters for the text
+			SetHighColor(ui_color(B_CONTROL_TEXT_COLOR));
+			SetLowColor(ui_color(B_CONTROL_BACKGROUND_COLOR));
+
+			BFont font;
+			GetFont(&font);
+
+			// Create a text drawer for the reading with some margin
+			BRect textRect = readingArea;
+			textRect.InsetBy(Config::kReadingAreaInset, Config::kReadingAreaInset);
+
+			// Add additional left and top margin
+			const float kLeftMargin = 10.0f;
+			const float kTopMargin = 10.0f;
+			textRect.left += kLeftMargin;
+			textRect.top += kTopMargin;
+
+			// Draw the text
+			font_height fh;
+			font.GetHeight(&fh);
+			float lineHeight = fh.ascent + fh.descent + fh.leading;
+
+			// Split the text into lines
+			BString text = fReading;
+			int32 start = 0;
+			int32 end = 0;
+			float y = textRect.top + fh.ascent;
+			float maxWidth = textRect.Width();
+
+			while (start < text.Length()) {
+				// Find the next line break
+				end = text.FindFirst("\n", start);
+				if (end == B_ERROR)
+					end = text.Length();
+
+				// Get the line
+				BString line;
+				text.CopyInto(line, start, end - start);
+
+				// Handle word wrapping
+				while (line.Length() > 0) {
+					// Find the portion that fits
+					BString displayLine = line;
+					while (
+						StringWidth(displayLine.String()) > maxWidth && displayLine.Length() > 1) {
+						// Try to break at a space
+						int32 lastSpace = displayLine.FindLast(' ');
+						if (lastSpace != B_ERROR && lastSpace > 0) {
+							displayLine.Truncate(lastSpace);
+						} else {
+							// Just truncate
+							displayLine.Truncate(displayLine.Length() - 1);
+						}
+					}
+
+					// Draw the line
+					if (y >= textRect.top - lineHeight && y <= textRect.bottom + lineHeight)
+						DrawString(displayLine.String(), BPoint(textRect.left, y));
+
+					y += lineHeight;
+
+					// Move to the next portion
+					if (displayLine.Length() < line.Length()) {
+						// Remove the displayed portion from line
+						if (displayLine.Length() < line.Length()) {
+							line.Remove(0, displayLine.Length());
+							// Remove leading spaces
+							while (line.Length() > 0 && line[0] == ' ')
+								line.Remove(0, 1);
+						} else {
+							line = "";
+						}
+					} else {
+						line = "";
+					}
+				}
+
+				// Move to the next line
+				start = end + 1;
+				y += lineHeight; // Extra space between paragraphs
+			}
+		}
+	}
+
+	// Define area for cards (now on the right, after the reading area)
+	BRect cardArea(bounds.left + fReadingAreaWidth, bounds.top, bounds.right, bounds.bottom);
+
+	// Draw cards in the card area, accounting for scroll offset
 	for (int i = 0; i < fCards.size(); i++) {
-		// Adjust card frame to fit within card area
+		// Adjust card frame to fit within card area and account for scroll offset
 		BRect cardFrame = fCards[i].frame;
-		cardFrame.OffsetBy(0, cardArea.top);
+		cardFrame.OffsetBy(-scrollOffset.x,
+			-scrollOffset.y); // Adjust for both horizontal and vertical scroll
+
+		// Only draw cards that are within the update rect
+		if (!updateRect.Intersects(cardFrame))
+			continue;
 
 		// Draw image
 		if (fCards[i].image) {
@@ -200,6 +282,111 @@ CardView::FrameResized(float width, float height)
 
 
 void
+CardView::ScrollTo(BPoint where)
+{
+	// Call the parent implementation
+	BView::ScrollTo(where);
+
+	// Redraw the view
+	Invalidate();
+}
+
+
+float
+CardView::CalculateTextHeight(const BString& text, float width)
+{
+	if (text.IsEmpty() || width <= 0)
+		return 0;
+
+	// Get font information
+	BFont font;
+	GetFont(&font);
+	font_height fh;
+	font.GetHeight(&fh);
+	float lineHeight = fh.ascent + fh.descent + fh.leading;
+
+	// Split the text into lines
+	BString textCopy = text;
+	int32 start = 0;
+	int32 end = 0;
+	float totalHeight = 0;
+
+	while (start < textCopy.Length()) {
+		// Find the next line break
+		end = textCopy.FindFirst("\n", start);
+		if (end == B_ERROR)
+			end = textCopy.Length();
+
+		// Get the line
+		BString line;
+		textCopy.CopyInto(line, start, end - start);
+
+		// Handle word wrapping
+		while (line.Length() > 0) {
+			// Find the portion that fits
+			BString displayLine = line;
+			while (StringWidth(displayLine.String()) > width && displayLine.Length() > 1) {
+				// Try to break at a space
+				int32 lastSpace = displayLine.FindLast(' ');
+				if (lastSpace != B_ERROR && lastSpace > 0) {
+					displayLine.Truncate(lastSpace);
+				} else {
+					// Just truncate
+					displayLine.Truncate(displayLine.Length() - 1);
+				}
+			}
+
+			// Add height for this line
+			totalHeight += lineHeight;
+
+			// Move to the next portion
+			if (displayLine.Length() < line.Length()) {
+				// Remove the displayed portion from line
+				if (displayLine.Length() < line.Length()) {
+					line.Remove(0, displayLine.Length());
+					// Remove leading spaces
+					while (line.Length() > 0 && line[0] == ' ')
+						line.Remove(0, 1);
+				} else {
+					line = "";
+				}
+			} else {
+				line = "";
+			}
+		}
+
+		// Move to the next line
+		start = end + 1;
+		totalHeight += lineHeight; // Extra space between paragraphs
+	}
+
+	return totalHeight + 20; // Add some padding
+}
+
+
+BSize
+CardView::MinSize()
+{
+	return BView::MinSize();
+}
+
+
+BSize
+CardView::MaxSize()
+{
+	return BView::MaxSize();
+}
+
+
+BSize
+CardView::PreferredSize()
+{
+	// Return the preferred size which accounts for all content
+	return BSize(fPreferredSize.Width(), fPreferredSize.Height());
+}
+
+
+void
 CardView::DisplayCards(const std::vector<CardInfo>& cards)
 {
 	printf("Displaying %d cards\n", (int)cards.size());
@@ -237,14 +424,6 @@ void
 CardView::DisplayReading(const BString& reading)
 {
 	fReading = reading;
-	if (fReadingView) {
-		fReadingView->SetText(reading.String());
-		// Show the scroll view when we have content
-		if (!reading.IsEmpty())
-			fScrollView->Show();
-		else
-			fScrollView->Hide();
-	}
 	RefreshLayout();
 }
 
@@ -316,6 +495,7 @@ CardView::LayoutThreeCardSpread()
 	else
 		fReadingAreaWidth = 0;
 
+	// Card area is now on the right, after the reading area
 	float cardAreaWidth = totalWidth - fReadingAreaWidth;
 
 	// Simplified responsive design - always use 3 columns for the spread
@@ -350,8 +530,9 @@ CardView::LayoutThreeCardSpread()
 		return;
 
 	// Position cards in a row (centered vertically within the top area)
+	// Cards are positioned after the reading area (fReadingAreaWidth)
 	float totalRowWidth = (fCardWidth * cardsPerRow) + (cardSpacing * (cardsPerRow - 1));
-	float rowStartX = (cardAreaWidth - totalRowWidth) / 2;
+	float rowStartX = fReadingAreaWidth + (cardAreaWidth - totalRowWidth) / 2;
 	float contentStartY = (totalHeight - fCardHeight - fLabelHeight) / 2;
 
 	for (int i = 0; i < fCards.size(); i++) {
@@ -363,14 +544,30 @@ CardView::LayoutThreeCardSpread()
 			yPosition + fCardHeight + fLabelHeight);
 	}
 
-	// Update font size based on label height
+	// Update preferred size - for three card spread, we ensure it's at least the bounds height
+	fPreferredSize = bounds;
+	fPreferredSize.bottom = totalHeight > bounds.Height() ? totalHeight : bounds.Height();
+
+	// Update font size based on window size, up to the maximum defined in config
 	BFont font;
 	GetFont(&font);
-	float fontSize = fLabelHeight * Config::kFontSizeRatio; // Font size is 50% of label height
-	if (fontSize < Config::kMinFontSize)
-		fontSize = Config::kMinFontSize; // Minimum font size
-	if (fontSize > Config::kMaxFontSize)
-		fontSize = Config::kMaxFontSize; // Maximum font size
+
+	// Calculate font size based on window width - scale from min to max
+	float minWindowWidth = 600.0f; // Minimum window width for min font size
+	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
+	float windowWidth = bounds.Width();
+
+	float fontSize;
+	if (windowWidth <= minWindowWidth) {
+		fontSize = Config::kMinFontSize;
+	} else if (windowWidth >= maxWindowWidth) {
+		fontSize = Config::kMaxFontSize;
+	} else {
+		// Linear interpolation between min and max font sizes
+		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
+		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
+	}
+
 	font.SetSize(fontSize);
 	SetFont(&font);
 }
@@ -388,6 +585,7 @@ CardView::LayoutTreeOfLifeSpread()
 	else
 		fReadingAreaWidth = 0;
 
+	// Card area is now on the right, after the reading area
 	float cardAreaWidth = totalWidth - fReadingAreaWidth;
 
 	float marginX = Config::kMarginX;
@@ -403,51 +601,78 @@ CardView::LayoutTreeOfLifeSpread()
 		return;
 
 	// Positions for the 10 cards in the Tree of Life spread
+	// Cards are positioned after the reading area (fReadingAreaWidth)
 	BPoint positions[10];
-	positions[0] = BPoint(cardAreaWidth / 2, marginY + fCardHeight / 2);
-	positions[1] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 1.5);
-	positions[2] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 1.5);
-	positions[3] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 2.5);
-	positions[4] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 2.5);
-	positions[5] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 2.5);
-	positions[6] = BPoint(cardAreaWidth / 4, marginY + fCardHeight * 3.5);
-	positions[7] = BPoint(cardAreaWidth * 3 / 4, marginY + fCardHeight * 3.5);
-	positions[8] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 3.5);
-	positions[9] = BPoint(cardAreaWidth / 2, marginY + fCardHeight * 4.5);
+	positions[0] = BPoint(fReadingAreaWidth + cardAreaWidth / 2, marginY + fCardHeight / 2);
+	positions[1] = BPoint(fReadingAreaWidth + cardAreaWidth / 4, marginY + fCardHeight * 1.5);
+	positions[2] = BPoint(fReadingAreaWidth + cardAreaWidth * 3 / 4, marginY + fCardHeight * 1.5);
+	positions[3] = BPoint(fReadingAreaWidth + cardAreaWidth / 4, marginY + fCardHeight * 2.5);
+	positions[4] = BPoint(fReadingAreaWidth + cardAreaWidth * 3 / 4, marginY + fCardHeight * 2.5);
+	positions[5] = BPoint(fReadingAreaWidth + cardAreaWidth / 2, marginY + fCardHeight * 2.5);
+	positions[6] = BPoint(fReadingAreaWidth + cardAreaWidth / 4, marginY + fCardHeight * 3.5);
+	positions[7] = BPoint(fReadingAreaWidth + cardAreaWidth * 3 / 4, marginY + fCardHeight * 3.5);
+	positions[8] = BPoint(fReadingAreaWidth + cardAreaWidth / 2, marginY + fCardHeight * 3.5);
+	positions[9] = BPoint(fReadingAreaWidth + cardAreaWidth / 2, marginY + fCardHeight * 4.5);
+
+	// Calculate the preferred size to accommodate all cards
+	float requiredHeight = marginY + fCardHeight * 5.5 + marginY;
 
 	for (int i = 0; i < 10; i++) {
 		float x = positions[i].x - fCardWidth / 2;
 		float y = positions[i].y - fCardHeight / 2;
 		fCards[i].frame.Set(x, y, x + fCardWidth, y + fCardHeight);
 	}
+
+	// Update preferred size to accommodate all cards
+	fPreferredSize = bounds;
+	fPreferredSize.bottom = requiredHeight > bounds.Height() ? requiredHeight : bounds.Height();
+
+	// Update font size based on window size, up to the maximum defined in config
+	BFont font;
+	GetFont(&font);
+
+	// Calculate font size based on window width - scale from min to max
+	float minWindowWidth = 600.0f; // Minimum window width for min font size
+	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
+	float windowWidth = bounds.Width();
+
+	float fontSize;
+	if (windowWidth <= minWindowWidth) {
+		fontSize = Config::kMinFontSize;
+	} else if (windowWidth >= maxWindowWidth) {
+		fontSize = Config::kMaxFontSize;
+	} else {
+		// Linear interpolation between min and max font sizes
+		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
+		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
+	}
+
+	font.SetSize(fontSize);
+	SetFont(&font);
 }
 
 
 void
 CardView::LayoutReadingArea()
 {
-	if (!fScrollView || !fReadingView)
-		return;
-
 	BRect bounds = Bounds();
 	float readingAreaWidth
 		= bounds.Width() * Config::kReadingAreaWidthRatio; // 30% for the reading area
 
-	// Reading area takes the right 30% of the view
-	BRect readingArea(bounds.right - readingAreaWidth, bounds.top, bounds.right, bounds.bottom);
+	// Calculate the height needed for the text
+	float textHeight
+		= CalculateTextHeight(fReading, readingAreaWidth - 2 * Config::kReadingAreaInset);
 
-	// Set the scroll view to fill the reading area
-	fScrollView->MoveTo(readingArea.left, readingArea.top);
-	fScrollView->ResizeTo(readingArea.Width(), readingArea.Height());
+	// Store the reading area dimensions for drawing
+	fReadingAreaWidth = readingAreaWidth;
+	fTextHeight = textHeight;
 
-	// Set the text view to be slightly smaller than the scroll view for borders
-	BRect textViewRect = readingArea;
-	textViewRect.OffsetTo(0, 0);
-	textViewRect.InsetBy(Config::kReadingAreaInset, Config::kReadingAreaInset); // Add some padding
-
-	// Adjust textRect to account for the scrollbar
-	textViewRect.right -= B_V_SCROLL_BAR_WIDTH;
-
-	fReadingView->ResizeTo(textViewRect.Width(), textViewRect.Height());
-	fReadingView->SetTextRect(textViewRect);
+	// Update the preferred size to accommodate the text height if it's larger than the view
+	float totalHeight = bounds.Height();
+	if (textHeight > totalHeight) {
+		fPreferredSize = bounds;
+		fPreferredSize.bottom = bounds.top + textHeight + 50; // Add some padding
+	} else {
+		fPreferredSize = bounds;
+	}
 }
