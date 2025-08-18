@@ -3,13 +3,17 @@
 #include <Directory.h>
 #include <File.h>
 #include <FindDirectory.h>
+#include <Message.h>
+#include <Node.h>
 #include <Path.h>
 #include <stdio.h>
 #include <stdlib.h> // for getenv
+#include <time.h>
 
 // Static member definition
 BString Config::sAPIKey = "";
 SpreadType Config::sSpread = THREE_CARD;
+bool Config::sLogReadings = false; // Default to not logging readings
 
 // UI Constants
 const float Config::kInitialCardWidth = 150;
@@ -54,7 +58,7 @@ const float Config::kMainWindowBottom = 600;
 const float Config::kSettingsWindowLeft = 100;
 const float Config::kSettingsWindowTop = 100;
 const float Config::kSettingsWindowRight = 500;
-const float Config::kSettingsWindowBottom = 350;
+const float Config::kSettingsWindowBottom = 400; // Increased from 350 to 400
 
 
 BString
@@ -111,6 +115,8 @@ Config::SaveAPIKeyToFile(const BString& apiKey)
 	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
 		file.Write(apiKey.String(), apiKey.Length());
 		file.Unset();
+		// Register the file with MIME type
+		RegisterFileWithMime(path.Path(), "text/plain");
 	}
 }
 
@@ -150,7 +156,8 @@ void
 Config::SetSpread(SpreadType spread)
 {
 	sSpread = spread;
-	// Removed file saving logic to use in-memory state only
+	// Save the spread to a settings file using BMessage
+	SaveSettingsToFile();
 }
 
 
@@ -158,4 +165,96 @@ SpreadType
 Config::GetSpread()
 {
 	return sSpread;
+}
+
+
+void
+Config::SetLogReadings(bool logReadings)
+{
+	sLogReadings = logReadings;
+	// Save the settings to a settings file using BMessage
+	SaveSettingsToFile();
+}
+
+
+bool
+Config::GetLogReadings()
+{
+	return sLogReadings;
+}
+
+
+void
+Config::SaveSettingsToFile()
+{
+	BPath path;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
+		return;
+
+	path.Append("AceOfWands");
+
+	// Create the directory if it doesn't exist
+	BDirectory dir;
+	if (dir.CreateDirectory(path.Path(), &dir) != B_OK && dir.SetTo(path.Path()) != B_OK)
+		return;
+
+	path.Append("settings.msg");
+
+	// Create a BMessage to store our settings
+	BMessage settings('AOWS'); // Ace of Wands Settings
+	settings.AddInt32("spread", static_cast<int32>(sSpread));
+	settings.AddBool("logReadings", sLogReadings);
+
+	// Save the message to file
+	BFile file;
+	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
+		settings.Flatten(&file);
+		file.Unset();
+		// Register the file with MIME type
+		RegisterFileWithMime(path.Path(), "application/x-vnd.Haiku-msg");
+	}
+}
+
+
+void
+Config::LoadSettingsFromFile()
+{
+	BPath path;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
+		return;
+
+	path.Append("AceOfWands/settings.msg");
+
+	BFile file;
+	if (file.SetTo(path.Path(), B_READ_ONLY) != B_OK)
+		return;
+
+	// Load the message from file
+	BMessage settings;
+	if (settings.Unflatten(&file) == B_OK) {
+		int32 spread;
+		if (settings.FindInt32("spread", &spread) == B_OK)
+			sSpread = static_cast<SpreadType>(spread);
+
+		bool logReadings;
+		if (settings.FindBool("logReadings", &logReadings) == B_OK)
+			sLogReadings = logReadings;
+	}
+
+	file.Unset();
+}
+
+
+void
+Config::RegisterFileWithMime(const char* path, const char* mimeType)
+{
+	BNode node(path);
+	if (node.InitCheck() == B_OK) {
+		// Register with the specified MIME type
+		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
+
+		// Also register with our application's signature so files open with our app
+		const char* appSig = "application/x-vnd.Ace-of-Wands";
+		node.WriteAttr("BEOS:APP_SIG", B_STRING_TYPE, 0, appSig, strlen(appSig) + 1);
+	}
 }

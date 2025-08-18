@@ -4,10 +4,15 @@
 #include "CardView.h"
 #include "Config.h"
 #include "Reading.h"
+#include <Directory.h>
 #include <File.h>
+#include <FindDirectory.h>
+#include <Node.h>
+#include <Path.h>
 #include <View.h>
 #include <chrono>
 #include <cstdio>
+#include <ctime>
 #include <thread>
 
 
@@ -112,6 +117,10 @@ CardPresenter::SaveFile(const BPath& path)
 
 	file.Write(content.String(), content.Length());
 	file.Unset();
+
+	// Register the file with our application's MIME type
+	Config::RegisterFileWithMime(path.Path(), "application/x-vnd.Ace-of-Wands");
+
 	printf("File saved successfully to: %s\n", path.Path());
 }
 
@@ -236,6 +245,10 @@ CardPresenter::LoadThreeCardSpread()
 		fCurrentReading = reading;
 		printf("Reading: %s\n", reading.String());
 
+		// Log the reading if enabled
+		if (Config::GetLogReadings())
+			SaveReadingToFile(cards, reading);
+
 		// Update the UI with the reading in a thread-safe manner
 		fView->UpdateReading(reading);
 	});
@@ -274,7 +287,63 @@ CardPresenter::LoadTreeOfLifeSpread()
 		fCurrentReading = reading;
 		printf("Reading: %s\n", reading.String());
 
+		// Log the reading if enabled
+		if (Config::GetLogReadings())
+			SaveReadingToFile(cards, reading);
+
 		// Update the UI with the reading in a thread-safe manner
 		fView->UpdateReading(reading);
 	});
+}
+
+
+void
+CardPresenter::SaveReadingToFile(const std::vector<CardInfo>& cards, const BString& reading)
+{
+	BPath path;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
+		return;
+
+	path.Append("AceOfWands/readings");
+
+	// Create the directory if it doesn't exist
+	BDirectory dir;
+	if (dir.CreateDirectory(path.Path(), &dir) != B_OK && dir.SetTo(path.Path()) != B_OK)
+		return;
+
+	// Generate a filename based on timestamp
+	time_t now = time(NULL);
+	struct tm* tm_now = localtime(&now);
+	char filename[256];
+	strftime(filename, sizeof(filename), "reading_%Y-%m-%d_%H-%M-%S.txt", tm_now);
+
+	path.Append(filename);
+
+	BFile file;
+	status_t status = file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+	if (status != B_OK) {
+		printf("Error creating reading file: %s\n", strerror(status));
+		return;
+	}
+
+	BString content = "Tarot Reading\n";
+	content << "Date: " << ctime(&now); // ctime includes newline
+	content << "Spread: " << (fSpread == THREE_CARD ? "Three Card" : "Tree of Life") << "\n\n";
+
+	for (size_t i = 0; i < cards.size(); ++i)
+		content << "Card " << (i + 1) << ": " << cards[i].displayName << "\n";
+
+	content << "\nAI Reading:\n" << reading << "\n";
+
+	file.Write(content.String(), content.Length());
+	file.Unset();
+
+	// Register the file with MIME type
+	BNode node(path.Path());
+	if (node.InitCheck() == B_OK) {
+		const char* mimeType = "application/x-vnd.Ace-of-Wands";
+		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
+	}
+
+	printf("Reading saved to: %s\n", path.Path());
 }

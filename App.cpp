@@ -24,6 +24,9 @@ App::~App()
 void
 App::ReadyToRun()
 {
+	// Load the settings from file
+	Config::LoadSettingsFromFile();
+
 	// Load the API key from file if it exists
 	BString savedApiKey = Config::LoadAPIKeyFromFile();
 	printf("Loaded API key: %s\n", savedApiKey.String());

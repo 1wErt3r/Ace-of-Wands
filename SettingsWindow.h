@@ -9,8 +9,10 @@ class BButton;
 class BStringView;
 class BMenuField;
 class BPopUpMenu;
+class BCheckBox;
 
 const uint32 kMsgSaveAPIKey = 'SvAK';
+const uint32 kMsgLogReadingsChanged = 'LogR';
 
 class SettingsWindow : public BWindow {
 public:
@@ -26,5 +28,6 @@ private:
 	BStringView* fInstructions;
 	BMenuField* fSpreadMenuField;
 	BPopUpMenu* fSpreadMenu;
+	BCheckBox* fLogReadingsCheckbox;
 	BMessenger fOwnerMessenger;
 };

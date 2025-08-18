@@ -4,6 +4,10 @@
 
 #include <Alert.h>
 #include <Button.h>
+#include <Catalog.h>
+#include <CheckBox.h>
+#include <GroupLayout.h>
+#include <GroupView.h>
 #include <LayoutBuilder.h>
 #include <MenuField.h>
 #include <MenuItem.h>
@@ -11,6 +15,9 @@
 #include <StringView.h>
 #include <TextControl.h>
 #include <cstdio>
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "SettingsWindow"
 
 
 SettingsWindow::SettingsWindow(BWindow* owner)
@@ -40,18 +47,33 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	if (item)
 		item->SetMarked(true);
 
+	// Create the log readings checkbox
+	fLogReadingsCheckbox = new BCheckBox("logReadings", "Log readings to file",
+		new BMessage(kMsgLogReadingsChanged));
+	fLogReadingsCheckbox->SetValue(Config::GetLogReadings() ? B_CONTROL_ON : B_CONTROL_OFF);
+
 	fSaveButton = new BButton("saveButton", "OK", new BMessage(kMsgSaveAPIKey));
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_DEFAULT_SPACING)
+	// Create form groups for better organization
+	BGroupView* apiKeyGroup = new BGroupView("API Key", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupLayout* apiKeyLayout = apiKeyGroup->GroupLayout();
+	apiKeyLayout->AddView(fInstructions);
+	apiKeyLayout->AddView(fAPIKeyInput);
+
+	BGroupView* spreadGroup = new BGroupView("Spread Settings", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupLayout* spreadLayout = spreadGroup->GroupLayout();
+	spreadLayout->AddView(fSpreadMenuField);
+	spreadLayout->AddView(fLogReadingsCheckbox);
+
+	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(fInstructions)
-		.Add(fAPIKeyInput)
-		.Add(fSpreadMenuField)
-		.AddGroup(B_HORIZONTAL, B_USE_DEFAULT_SPACING)
+		.Add(apiKeyGroup)
+		.Add(spreadGroup)
+		.AddGroup(B_HORIZONTAL)
 		.AddGlue()
 		.Add(fSaveButton)
 		.End()
-		.Layout();
+		.End();
 }
 
 
@@ -72,6 +94,9 @@ SettingsWindow::MessageReceived(BMessage* msg)
 				int32 index = fSpreadMenu->IndexOf(item);
 				Config::SetSpread(static_cast<SpreadType>(index));
 			}
+			// Save the log readings setting
+			Config::SetLogReadings(fLogReadingsCheckbox->Value() == B_CONTROL_ON);
+
 			BMessage reply(kMsgAPIKeyReceived);
 			reply.AddString("apiKey", fAPIKeyInput->Text());
 			fOwnerMessenger.SendMessage(&reply);
@@ -86,6 +111,12 @@ SettingsWindow::MessageReceived(BMessage* msg)
 				spreadMsg.AddString("spread", item->Label());
 				fOwnerMessenger.SendMessage(&spreadMsg);
 			}
+			break;
+		}
+		case kMsgLogReadingsChanged:
+		{
+			// The checkbox state has changed, but we don't need to do anything here
+			// since we'll save all settings when the user clicks OK
 			break;
 		}
 		default:

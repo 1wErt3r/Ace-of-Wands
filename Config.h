@@ -13,6 +13,13 @@ public:
 	static void SetSpread(SpreadType spread);
 	static SpreadType GetSpread();
 
+	static void SetLogReadings(bool logReadings);
+	static bool GetLogReadings();
+
+	static void SaveSettingsToFile();
+	static void LoadSettingsFromFile();
+
+	static void RegisterFileWithMime(const char* path, const char* mimeType);
 	// UI Constants
 	static const float kInitialCardWidth;
 	static const float kInitialCardHeight;
@@ -61,6 +68,6 @@ public:
 private:
 	static BString sAPIKey;
 	static SpreadType sSpread;
+	static bool sLogReadings;
 	static void SaveAPIKeyToFile(const BString& apiKey);
-	static void SaveSpreadToFile(SpreadType spread);
 };

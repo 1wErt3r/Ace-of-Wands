@@ -96,10 +96,10 @@ MainWindow::MessageReceived(BMessage* message)
 		}
 		case kMsgSpreadChanged:
 		{
-			BString spreadName;
+			const char* spreadName;
 			if (message->FindString("spread", &spreadName) == B_OK) {
 				if (fCardPresenter)
-					fCardPresenter->SetSpread(spreadName);
+					fCardPresenter->SetSpread(BString(spreadName));
 			}
 			break;
 		}
