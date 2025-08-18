@@ -19,6 +19,7 @@ public:
 	static void SaveSettingsToFile();
 	static void LoadSettingsFromFile();
 
+	static void RegisterFileWithMime(const char* path, const char* mimeType);
 	// UI Constants
 	static const float kInitialCardWidth;
 	static const float kInitialCardHeight;
@@ -69,5 +70,4 @@ private:
 	static SpreadType sSpread;
 	static bool sLogReadings;
 	static void SaveAPIKeyToFile(const BString& apiKey);
-	static void RegisterFileWithMime(const char* path, const char* mimeType);
 };

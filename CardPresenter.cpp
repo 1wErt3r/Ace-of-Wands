@@ -117,6 +117,10 @@ CardPresenter::SaveFile(const BPath& path)
 
 	file.Write(content.String(), content.Length());
 	file.Unset();
+
+	// Register the file with our application's MIME type
+	Config::RegisterFileWithMime(path.Path(), "application/x-vnd.Ace-of-Wands");
+
 	printf("File saved successfully to: %s\n", path.Path());
 }
 
@@ -337,7 +341,7 @@ CardPresenter::SaveReadingToFile(const std::vector<CardInfo>& cards, const BStri
 	// Register the file with MIME type
 	BNode node(path.Path());
 	if (node.InitCheck() == B_OK) {
-		const char* mimeType = "text/plain";
+		const char* mimeType = "application/x-vnd.Ace-of-Wands";
 		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
 	}
 

@@ -249,6 +249,12 @@ void
 Config::RegisterFileWithMime(const char* path, const char* mimeType)
 {
 	BNode node(path);
-	if (node.InitCheck() == B_OK)
+	if (node.InitCheck() == B_OK) {
+		// Register with the specified MIME type
 		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
+
+		// Also register with our application's signature so files open with our app
+		const char* appSig = "application/x-vnd.Ace-of-Wands";
+		node.WriteAttr("BEOS:APP_SIG", B_STRING_TYPE, 0, appSig, strlen(appSig) + 1);
+	}
 }
