@@ -33,9 +33,7 @@ const float Config::kMinLabelHeight = 30;
 const float Config::kMaxLabelHeight = 60;
 const float Config::kMinCardWidth = 100;
 const float Config::kMinCardHeight = 140;
-const float Config::kFontSizeRatio = 0.5f;
-const float Config::kMinFontSize = 12;
-const float Config::kMaxFontSize = 24;
+
 const float Config::kTreeOfLifeCardWidthRatio = 4.5;
 const float Config::kReadingAreaInset = 10;
 

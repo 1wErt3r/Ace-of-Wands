@@ -38,9 +38,7 @@ public:
 	static const float kMaxLabelHeight;
 	static const float kMinCardWidth;
 	static const float kMinCardHeight;
-	static const float kFontSizeRatio;
-	static const float kMinFontSize;
-	static const float kMaxFontSize;
+
 	static const float kTreeOfLifeCardWidthRatio;
 	static const float kReadingAreaInset;
 

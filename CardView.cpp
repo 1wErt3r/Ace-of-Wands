@@ -526,29 +526,6 @@ CardView::LayoutThreeCardSpread()
 	// Update preferred size - for three card spread, we ensure it's at least the bounds height
 	fPreferredSize = bounds;
 	fPreferredSize.bottom = totalHeight > bounds.Height() ? totalHeight : bounds.Height();
-
-	// Update font size based on window size, up to the maximum defined in config
-	BFont font;
-	GetFont(&font);
-
-	// Calculate font size based on window width - scale from min to max
-	float minWindowWidth = 600.0f; // Minimum window width for min font size
-	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
-	float windowWidth = bounds.Width();
-
-	float fontSize;
-	if (windowWidth <= minWindowWidth) {
-		fontSize = Config::kMinFontSize;
-	} else if (windowWidth >= maxWindowWidth) {
-		fontSize = Config::kMaxFontSize;
-	} else {
-		// Linear interpolation between min and max font sizes
-		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
-		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
-	}
-
-	font.SetSize(fontSize);
-	SetFont(&font);
 }
 
 
@@ -605,29 +582,6 @@ CardView::LayoutTreeOfLifeSpread()
 	// Update preferred size to accommodate all cards
 	fPreferredSize = bounds;
 	fPreferredSize.bottom = requiredHeight > bounds.Height() ? requiredHeight : bounds.Height();
-
-	// Update font size based on window size, up to the maximum defined in config
-	BFont font;
-	GetFont(&font);
-
-	// Calculate font size based on window width - scale from min to max
-	float minWindowWidth = 600.0f; // Minimum window width for min font size
-	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
-	float windowWidth = bounds.Width();
-
-	float fontSize;
-	if (windowWidth <= minWindowWidth) {
-		fontSize = Config::kMinFontSize;
-	} else if (windowWidth >= maxWindowWidth) {
-		fontSize = Config::kMaxFontSize;
-	} else {
-		// Linear interpolation between min and max font sizes
-		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
-		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
-	}
-
-	font.SetSize(fontSize);
-	SetFont(&font);
 }
 
 
