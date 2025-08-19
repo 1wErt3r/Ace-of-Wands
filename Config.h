@@ -16,6 +16,9 @@ public:
 	static void SetLogReadings(bool logReadings);
 	static bool GetLogReadings();
 
+	static void SetFontSize(float fontSize);
+	static float GetFontSize();
+
 	static void SaveSettingsToFile();
 	static void LoadSettingsFromFile();
 
@@ -67,5 +70,6 @@ private:
 	static BString sAPIKey;
 	static SpreadType sSpread;
 	static bool sLogReadings;
+	static float sFontSize;
 	static void SaveAPIKeyToFile(const BString& apiKey);
 };

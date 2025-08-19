@@ -103,6 +103,16 @@ MainWindow::MessageReceived(BMessage* message)
 			}
 			break;
 		}
+		case kMsgFontSizeChanged:
+		{
+			const char* fontSizeStr;
+			if (message->FindString("fontSize", &fontSizeStr) == B_OK) {
+				float fontSize = atof(fontSizeStr);
+				if (fCardPresenter)
+					fCardPresenter->SetFontSize(fontSize);
+			}
+			break;
+		}
 		case B_SAVE_REQUESTED:
 		{
 			entry_ref directoryRef;

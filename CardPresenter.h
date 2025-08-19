@@ -28,6 +28,7 @@ public:
 	BString GetAPIKey();
 	void SetAPIKey(const BString& apiKey);
 	void SetSpread(const BString& spreadName);
+	void SetFontSize(float fontSize);
 
 private:
 	void LoadThreeCardSpread();
