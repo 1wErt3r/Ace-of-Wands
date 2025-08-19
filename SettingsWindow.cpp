@@ -52,6 +52,12 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 		new BMessage(kMsgLogReadingsChanged));
 	fLogReadingsCheckbox->SetValue(Config::GetLogReadings() ? B_CONTROL_ON : B_CONTROL_OFF);
 
+	fFontSizeInput
+		= new BTextControl("fontSizeInput", "Font Size:", "", new BMessage(kMsgFontSizeChanged));
+	BString fontSize;
+	fontSize << Config::GetFontSize();
+	fFontSizeInput->SetText(fontSize.String());
+
 	fSaveButton = new BButton("saveButton", "OK", new BMessage(kMsgSaveAPIKey));
 
 	// Create form groups for better organization
@@ -68,6 +74,7 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(apiKeyGroup)
+		.Add(fFontSizeInput)
 		.Add(spreadGroup)
 		.AddGroup(B_HORIZONTAL)
 		.AddGlue()
@@ -88,6 +95,18 @@ SettingsWindow::MessageReceived(BMessage* msg)
 	switch (msg->what) {
 		case kMsgSaveAPIKey:
 		{
+			const char* text = fFontSizeInput->Text();
+			if (text != NULL && *text != '\0') {
+				char* end;
+				long size = strtol(text, &end, 10);
+				if (*end != '\0' || size <= 0) {
+					BAlert* alert = new BAlert("Error",
+						"Invalid font size. Please enter a positive number.", "OK");
+					alert->Go();
+					return;
+				}
+				Config::SetFontSize(size);
+			}
 			Config::SetAPIKey(fAPIKeyInput->Text());
 			BMenuItem* item = fSpreadMenu->FindMarked();
 			if (item) {
@@ -117,6 +136,21 @@ SettingsWindow::MessageReceived(BMessage* msg)
 		{
 			// The checkbox state has changed, but we don't need to do anything here
 			// since we'll save all settings when the user clicks OK
+			break;
+		}
+		case kMsgFontSizeChanged:
+		{
+			// Send font size change message to main window immediately
+			const char* text = fFontSizeInput->Text();
+			if (text != NULL && *text != '\0') {
+				char* end;
+				long size = strtol(text, &end, 10);
+				if (*end == '\0' && size > 0) {
+					BMessage fontSizeMsg(kMsgFontSizeChanged);
+					fontSizeMsg.AddString("fontSize", text);
+					fOwnerMessenger.SendMessage(&fontSizeMsg);
+				}
+			}
 			break;
 		}
 		default:

@@ -32,9 +32,9 @@ CardView::CardView(BRect frame)
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 
-	// Set a better font for card labels
+	// Set a better font for card labels using configured font size
 	BFont font;
-	font.SetSize(Config::kInitialFontSize); // Increased text size
+	font.SetSize(Config::GetFontSize()); // Use configured font size
 	SetFont(&font);
 
 	// Configure the BTextView for read-only display
@@ -42,9 +42,9 @@ CardView::CardView(BRect frame)
 	fReadingView->MakeEditable(false);
 	fReadingView->MakeSelectable(true); // Allow text selection
 	fReadingView->SetWordWrap(true);
-	// Set a better font for the reading text
+	// Set a better font for the reading text using configured font size
 	BFont readingFont;
-	readingFont.SetSize(Config::kInitialFontSize);
+	readingFont.SetSize(Config::GetFontSize()); // Use configured font size
 	fReadingView->SetFontAndColor(&readingFont);
 }
 
@@ -97,7 +97,8 @@ CardView::Draw(BRect updateRect)
 		const char* message = "Choose New Reading from the Ace of Wands menu to get started";
 		BFont font;
 		GetFont(&font);
-		font.SetSize(Config::kInitialFontSize);
+		// Use the current font size instead of hardcoded value
+		font.SetSize(Config::GetFontSize());
 		SetFont(&font);
 
 		font_height fh;
@@ -454,6 +455,29 @@ CardView::SetSpread(SpreadType spread)
 
 
 void
+CardView::SetFontSize(float size)
+{
+	// Update the font size for the CardView (card labels)
+	BFont font;
+	GetFont(&font);
+	font.SetSize(size);
+	SetFont(&font);
+
+	// Update the font size for the reading view
+	BFont readingFont;
+	fReadingView->GetFont(&readingFont);
+	readingFont.SetSize(size);
+	fReadingView->SetFontAndColor(&readingFont);
+
+	// Update the font size in the configuration
+	Config::SetFontSize(size);
+
+	// Refresh the layout to apply changes
+	RefreshLayout();
+}
+
+
+void
 CardView::LayoutCards()
 {
 	if (fSpread == THREE_CARD)
@@ -526,29 +550,6 @@ CardView::LayoutThreeCardSpread()
 	// Update preferred size - for three card spread, we ensure it's at least the bounds height
 	fPreferredSize = bounds;
 	fPreferredSize.bottom = totalHeight > bounds.Height() ? totalHeight : bounds.Height();
-
-	// Update font size based on window size, up to the maximum defined in config
-	BFont font;
-	GetFont(&font);
-
-	// Calculate font size based on window width - scale from min to max
-	float minWindowWidth = 600.0f; // Minimum window width for min font size
-	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
-	float windowWidth = bounds.Width();
-
-	float fontSize;
-	if (windowWidth <= minWindowWidth) {
-		fontSize = Config::kMinFontSize;
-	} else if (windowWidth >= maxWindowWidth) {
-		fontSize = Config::kMaxFontSize;
-	} else {
-		// Linear interpolation between min and max font sizes
-		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
-		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
-	}
-
-	font.SetSize(fontSize);
-	SetFont(&font);
 }
 
 
@@ -605,29 +606,6 @@ CardView::LayoutTreeOfLifeSpread()
 	// Update preferred size to accommodate all cards
 	fPreferredSize = bounds;
 	fPreferredSize.bottom = requiredHeight > bounds.Height() ? requiredHeight : bounds.Height();
-
-	// Update font size based on window size, up to the maximum defined in config
-	BFont font;
-	GetFont(&font);
-
-	// Calculate font size based on window width - scale from min to max
-	float minWindowWidth = 600.0f; // Minimum window width for min font size
-	float maxWindowWidth = 1200.0f; // Maximum window width for max font size
-	float windowWidth = bounds.Width();
-
-	float fontSize;
-	if (windowWidth <= minWindowWidth) {
-		fontSize = Config::kMinFontSize;
-	} else if (windowWidth >= maxWindowWidth) {
-		fontSize = Config::kMaxFontSize;
-	} else {
-		// Linear interpolation between min and max font sizes
-		float ratio = (windowWidth - minWindowWidth) / (maxWindowWidth - minWindowWidth);
-		fontSize = Config::kMinFontSize + ratio * (Config::kMaxFontSize - Config::kMinFontSize);
-	}
-
-	font.SetSize(fontSize);
-	SetFont(&font);
 }
 
 

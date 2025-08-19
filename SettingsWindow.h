@@ -13,6 +13,7 @@ class BCheckBox;
 
 const uint32 kMsgSaveAPIKey = 'SvAK';
 const uint32 kMsgLogReadingsChanged = 'LogR';
+const uint32 kMsgFontSizeChanged = 'FnSz';
 
 class SettingsWindow : public BWindow {
 public:
@@ -24,6 +25,7 @@ public:
 
 private:
 	BTextControl* fAPIKeyInput;
+	BTextControl* fFontSizeInput;
 	BButton* fSaveButton;
 	BStringView* fInstructions;
 	BMenuField* fSpreadMenuField;

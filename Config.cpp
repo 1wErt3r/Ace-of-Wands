@@ -14,6 +14,7 @@
 BString Config::sAPIKey = "";
 SpreadType Config::sSpread = THREE_CARD;
 bool Config::sLogReadings = false; // Default to not logging readings
+float Config::sFontSize = 12.0f;
 
 // UI Constants
 const float Config::kInitialCardWidth = 150;
@@ -33,9 +34,7 @@ const float Config::kMinLabelHeight = 30;
 const float Config::kMaxLabelHeight = 60;
 const float Config::kMinCardWidth = 100;
 const float Config::kMinCardHeight = 140;
-const float Config::kFontSizeRatio = 0.5f;
-const float Config::kMinFontSize = 12;
-const float Config::kMaxFontSize = 24;
+
 const float Config::kTreeOfLifeCardWidthRatio = 4.5;
 const float Config::kReadingAreaInset = 10;
 
@@ -58,7 +57,7 @@ const float Config::kMainWindowBottom = 600;
 const float Config::kSettingsWindowLeft = 100;
 const float Config::kSettingsWindowTop = 100;
 const float Config::kSettingsWindowRight = 500;
-const float Config::kSettingsWindowBottom = 400; // Increased from 350 to 400
+const float Config::kSettingsWindowBottom = 500; // Increased to accommodate font size control
 
 
 BString
@@ -185,6 +184,22 @@ Config::GetLogReadings()
 
 
 void
+Config::SetFontSize(float fontSize)
+{
+	sFontSize = fontSize;
+	// Save the settings to a settings file using BMessage
+	SaveSettingsToFile();
+}
+
+
+float
+Config::GetFontSize()
+{
+	return sFontSize;
+}
+
+
+void
 Config::SaveSettingsToFile()
 {
 	BPath path;
@@ -204,6 +219,7 @@ Config::SaveSettingsToFile()
 	BMessage settings('AOWS'); // Ace of Wands Settings
 	settings.AddInt32("spread", static_cast<int32>(sSpread));
 	settings.AddBool("logReadings", sLogReadings);
+	settings.AddFloat("fontSize", sFontSize);
 
 	// Save the message to file
 	BFile file;
@@ -239,6 +255,10 @@ Config::LoadSettingsFromFile()
 		bool logReadings;
 		if (settings.FindBool("logReadings", &logReadings) == B_OK)
 			sLogReadings = logReadings;
+
+		float fontSize;
+		if (settings.FindFloat("fontSize", &fontSize) == B_OK)
+			sFontSize = fontSize;
 	}
 
 	file.Unset();

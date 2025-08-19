@@ -16,6 +16,9 @@ public:
 	static void SetLogReadings(bool logReadings);
 	static bool GetLogReadings();
 
+	static void SetFontSize(float fontSize);
+	static float GetFontSize();
+
 	static void SaveSettingsToFile();
 	static void LoadSettingsFromFile();
 
@@ -38,9 +41,7 @@ public:
 	static const float kMaxLabelHeight;
 	static const float kMinCardWidth;
 	static const float kMinCardHeight;
-	static const float kFontSizeRatio;
-	static const float kMinFontSize;
-	static const float kMaxFontSize;
+
 	static const float kTreeOfLifeCardWidthRatio;
 	static const float kReadingAreaInset;
 
@@ -69,5 +70,6 @@ private:
 	static BString sAPIKey;
 	static SpreadType sSpread;
 	static bool sLogReadings;
+	static float sFontSize;
 	static void SaveAPIKeyToFile(const BString& apiKey);
 };

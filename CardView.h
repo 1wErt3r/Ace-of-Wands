@@ -39,6 +39,7 @@ public:
 	void ClearCards();
 	void RefreshLayout();
 	void SetSpread(SpreadType spread);
+	void SetFontSize(float size);
 
 private:
 	void LayoutCards();

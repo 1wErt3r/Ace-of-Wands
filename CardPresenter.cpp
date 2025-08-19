@@ -78,6 +78,14 @@ CardPresenter::SetSpread(const BString& spreadName)
 
 
 void
+CardPresenter::SetFontSize(float fontSize)
+{
+	Config::SetFontSize(fontSize); // Update the global configuration
+	fView->SetFontSize(fontSize); // Update the view
+}
+
+
+void
 CardPresenter::NewReading()
 {
 	fModel->ClearCurrentSpread();
