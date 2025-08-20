@@ -7,7 +7,7 @@
 #include <Catalog.h>
 #include <CheckBox.h>
 #include <GroupLayout.h>
-#include <GroupView.h>
+#include <InterfaceDefs.h>
 #include <LayoutBuilder.h>
 #include <MenuField.h>
 #include <MenuItem.h>
@@ -61,26 +61,35 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	fSaveButton = new BButton("saveButton", "OK", new BMessage(kMsgSaveAPIKey));
 
 	// Create form groups for better organization
-	BGroupView* apiKeyGroup = new BGroupView("API Key", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupView* apiKeyGroup = new BGroupView("API Key", B_VERTICAL, 0);
 	BGroupLayout* apiKeyLayout = apiKeyGroup->GroupLayout();
+	apiKeyLayout->SetInsets(0, 0, 0, 0);
 	apiKeyLayout->AddView(fInstructions);
 	apiKeyLayout->AddView(fAPIKeyInput);
 
-	BGroupView* spreadGroup = new BGroupView("Spread Settings", B_VERTICAL, B_USE_DEFAULT_SPACING);
+	BGroupView* spreadGroup = new BGroupView("Spread Settings", B_VERTICAL, 0);
 	BGroupLayout* spreadLayout = spreadGroup->GroupLayout();
+	spreadLayout->SetInsets(0, 0, 0, 0);
 	spreadLayout->AddView(fSpreadMenuField);
 	spreadLayout->AddView(fLogReadingsCheckbox);
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL)
-		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(apiKeyGroup)
-		.Add(fFontSizeInput)
-		.Add(spreadGroup)
-		.AddGroup(B_HORIZONTAL)
-		.AddGlue()
-		.Add(fSaveButton)
-		.End()
-		.End();
+	// Use a BGroupLayout for a cleaner, more professional appearance
+	BGroupLayout* layout = new BGroupLayout(B_VERTICAL, B_USE_DEFAULT_SPACING);
+	this->SetLayout(layout);
+	layout->SetInsets(B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING,
+		B_USE_DEFAULT_SPACING);
+
+	// Set the window background to the default panel color
+	this->GetLayout()->View()->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+
+	// Add all controls to the layout with appropriate spacing
+	layout->AddView(apiKeyGroup);
+	layout->AddView(fFontSizeInput);
+	layout->AddView(spreadGroup);
+
+	// Add the save button with proper spacing
+	layout->AddItem(BSpaceLayoutItem::CreateGlue());
+	layout->AddView(fSaveButton);
 }
 
 
