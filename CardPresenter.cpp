@@ -16,16 +16,19 @@
 #include <thread>
 
 
-CardPresenter::CardPresenter()
+// Constructor now takes dependencies and assumes ownership
+CardPresenter::CardPresenter(CardModel* model, CardView* view)
 	:
-	fModel(new CardModel()),
-	fView(new CardView(BRect(0, 0, 0, 0))),
+	fModel(model),
+	fView(view),
 	fReading(nullptr),
 	fCurrentReading(""),
 	fSpread(Config::GetSpread()) // Initialize from Config's in-memory state
 {
-	fModel->Initialize();
-	fView->SetSpread(fSpread);
+	if (fModel)
+		fModel->Initialize();
+	if (fView)
+		fView->SetSpread(fSpread);
 }
 
 
@@ -35,7 +38,9 @@ CardPresenter::~CardPresenter()
 	if (fReadingFuture.valid())
 		fReadingFuture.wait();
 	delete fReading;
+	// Presenter owns and deletes the model and view
 	delete fModel;
+	delete fView;
 }
 
 

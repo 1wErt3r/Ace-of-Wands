@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "CardModel.h" // Include CardModel
 #include "CardPresenter.h"
 #include "CardView.h"
 #include "Config.h"
@@ -30,8 +31,12 @@ MainWindow::MainWindow()
 	// Create menu bar
 	_CreateMenuBar();
 
-	// Create the presenter
-	fCardPresenter = new CardPresenter();
+	// Create dependencies for the presenter
+	CardModel* model = new CardModel();
+	CardView* view = new CardView(BRect(0, 0, 0, 0));
+
+	// Create the presenter with injected dependencies
+	fCardPresenter = new CardPresenter(model, view);
 
 	// Create file panels
 	fOpenFilePanel
