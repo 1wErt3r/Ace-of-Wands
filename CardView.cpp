@@ -52,7 +52,8 @@ CardView::CardView(BRect frame)
 CardView::~CardView()
 {
 	ClearCards();
-	delete fReadingView; // Clean up BTextView
+	// fReadingView is a child view and will be automatically deleted by BView's destructor
+	// delete fReadingView; // Removed to prevent double-delete
 }
 
 

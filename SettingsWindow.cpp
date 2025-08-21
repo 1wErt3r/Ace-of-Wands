@@ -52,8 +52,8 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 		new BMessage(kMsgLogReadingsChanged));
 	fLogReadingsCheckbox->SetValue(Config::GetLogReadings() ? B_CONTROL_ON : B_CONTROL_OFF);
 
-	fFontSizeInput
-		= new BTextControl("fontSizeInput", "Font Size:", "", new BMessage(kMsgFontSizeChanged));
+	fFontSizeInput = new BTextControl("fontSizeInput", "Font Size:", "",
+		new BMessage(kMsgSettingsFontSizeChanged));
 	BString fontSize;
 	fontSize << Config::GetFontSize();
 	fFontSizeInput->SetText(fontSize.String());
@@ -107,14 +107,14 @@ SettingsWindow::MessageReceived(BMessage* msg)
 			const char* text = fFontSizeInput->Text();
 			if (text != NULL && *text != '\0') {
 				char* end;
-				long size = strtol(text, &end, 10);
-				if (*end != '\0' || size <= 0) {
+				double size = strtod(text, &end);
+				if (*end != '\0' || size <= 0.0) {
 					BAlert* alert = new BAlert("Error",
 						"Invalid font size. Please enter a positive number.", "OK");
 					alert->Go();
 					return;
 				}
-				Config::SetFontSize(size);
+				Config::SetFontSize(static_cast<float>(size));
 			}
 			Config::SetAPIKey(fAPIKeyInput->Text());
 			BMenuItem* item = fSpreadMenu->FindMarked();
@@ -147,14 +147,14 @@ SettingsWindow::MessageReceived(BMessage* msg)
 			// since we'll save all settings when the user clicks OK
 			break;
 		}
-		case kMsgFontSizeChanged:
+		case kMsgSettingsFontSizeChanged:
 		{
 			// Send font size change message to main window immediately
 			const char* text = fFontSizeInput->Text();
 			if (text != NULL && *text != '\0') {
 				char* end;
-				long size = strtol(text, &end, 10);
-				if (*end == '\0' && size > 0) {
+				double size = strtod(text, &end);
+				if (*end == '\0' && size > 0.0) {
 					BMessage fontSizeMsg(kMsgFontSizeChanged);
 					fontSizeMsg.AddString("fontSize", text);
 					fOwnerMessenger.SendMessage(&fontSizeMsg);

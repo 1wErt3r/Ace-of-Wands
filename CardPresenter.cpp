@@ -16,7 +16,7 @@
 #include <thread>
 
 
-// Constructor now takes dependencies and assumes ownership
+// Constructor now takes dependencies and assumes ownership of the model
 CardPresenter::CardPresenter(CardModel* model, CardView* view)
 	:
 	fModel(model),
@@ -38,9 +38,10 @@ CardPresenter::~CardPresenter()
 	if (fReadingFuture.valid())
 		fReadingFuture.wait();
 	delete fReading;
-	// Presenter owns and deletes the model and view
+	// Presenter no longer owns the view, so it doesn't delete it
+	// delete fView;
+	// Presenter still owns the model
 	delete fModel;
-	delete fView;
 }
 
 
@@ -48,6 +49,18 @@ BView*
 CardPresenter::GetView()
 {
 	return fView;
+}
+
+
+void
+CardPresenter::SetView(CardView* view)
+{
+	// If there was a previous view, we should ideally remove it from its parent
+	// But for simplicity, we'll just replace the pointer
+	// The MainWindow is responsible for the lifecycle of the view
+	fView = view;
+	if (fView)
+		fView->SetSpread(fSpread);
 }
 
 

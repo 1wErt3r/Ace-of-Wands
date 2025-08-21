@@ -1,16 +1,16 @@
 #include "App.h"
-#include "Config.h"
+#include "CardModel.h"
+#include "CardPresenter.h"
+#include "CardView.h"
+#include "Config.h" // Include Config
 #include "MainWindow.h"
-#include <Alert.h>
-#include <cstdio>
-
-
-const char* kApplicationSignature = "application/x-vnd.Ace-of-Wands";
+#include <Application.h>
+#include <Rect.h>
 
 
 App::App()
 	:
-	BApplication(kApplicationSignature),
+	BApplication("application/x-vnd.Ace-of-Wands"),
 	fWindow(NULL)
 {
 }
@@ -18,6 +18,8 @@ App::App()
 
 App::~App()
 {
+	delete fWindow;
+	fWindow = NULL;
 }
 
 
@@ -33,7 +35,12 @@ App::ReadyToRun()
 	if (!savedApiKey.IsEmpty())
 		Config::SetAPIKey(savedApiKey);
 
-	fWindow = new MainWindow();
+	CardModel* model = new CardModel();
+	CardView* view = new CardView(BRect(0, 0, 0, 0));
+
+	CardPresenter* presenter = new CardPresenter(model, view);
+
+	fWindow = new MainWindow(presenter);
 	fWindow->Show();
 }
 
@@ -43,6 +50,6 @@ main()
 {
 	App* app = new App();
 	app->Run();
-	delete app;
+
 	return 0;
 }

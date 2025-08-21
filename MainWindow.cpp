@@ -1,7 +1,5 @@
 #include "MainWindow.h"
-#include "CardModel.h" // Include CardModel
 #include "CardPresenter.h"
-#include "CardView.h"
 #include "Config.h"
 #include "SettingsWindow.h"
 
@@ -18,25 +16,18 @@
 #include <cstdio>
 
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(CardPresenter* presenter)
 	:
 	BWindow(BRect(Config::kMainWindowLeft, Config::kMainWindowTop, Config::kMainWindowRight,
 				Config::kMainWindowBottom),
 		"Ace of Wands", B_TITLED_WINDOW, B_ASYNCHRONOUS_CONTROLS | B_QUIT_ON_WINDOW_CLOSE),
 	fMenuBar(NULL),
-	fCardPresenter(NULL),
+	fCardPresenter(presenter), // Injected presenter
 	fOpenFilePanel(NULL),
 	fSaveFilePanel(NULL)
 {
 	// Create menu bar
 	_CreateMenuBar();
-
-	// Create dependencies for the presenter
-	CardModel* model = new CardModel();
-	CardView* view = new CardView(BRect(0, 0, 0, 0));
-
-	// Create the presenter with injected dependencies
-	fCardPresenter = new CardPresenter(model, view);
 
 	// Create file panels
 	fOpenFilePanel
@@ -44,10 +35,8 @@ MainWindow::MainWindow()
 	fSaveFilePanel
 		= new BFilePanel(B_SAVE_PANEL, new BMessenger(this), NULL, B_FILE_NODE, false, NULL);
 
-	printf("B_SAVE_REQUESTED: %lu\n", B_SAVE_REQUESTED);
-
 	// Create a scroll view for the card view
-	BScrollView* scrollView = new BScrollView("CardScrollView", fCardPresenter->GetView(),
+	BScrollView* scrollView = new BScrollView("CardScrollView", presenter->GetView(),
 		B_FOLLOW_ALL_SIDES, false, true, B_FANCY_BORDER);
 
 	// Use layout builder to arrange menu bar and scroll view
@@ -57,7 +46,6 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-	// Clean up in proper order
 	delete fCardPresenter;
 	fCardPresenter = NULL;
 

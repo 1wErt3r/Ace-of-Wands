@@ -26,6 +26,7 @@ public:
 	void OpenFile(const BPath& path);
 	BString GetCurrentReading() const { return fCurrentReading; }
 	BView* GetView();
+	void SetView(CardView* view); // New method to set the view
 	BString GetAPIKey();
 	void SetAPIKey(const BString& apiKey);
 	void SetSpread(const BString& spreadName);

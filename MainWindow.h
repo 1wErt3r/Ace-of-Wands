@@ -1,35 +1,40 @@
-#pragma once
+#ifndef MAIN_WINDOW_H
+#define MAIN_WINDOW_H
 
 #include <FilePanel.h>
 #include <Window.h>
 
-class BMenuBar;
 class CardPresenter;
-class SettingsWindow;
+class CardView;
+class BMenuBar;
 
-const uint32 kAppMessageBase = 'AOW_';
-const uint32 kMsgNewReading = kAppMessageBase + 1;
-const uint32 kMsgSave = kAppMessageBase + 2;
-const uint32 kMsgOpen = kAppMessageBase + 3;
-const uint32 kMsgSettings = kAppMessageBase + 4;
-const uint32 kMsgAPIKeyReceived = kAppMessageBase + 5;
-const uint32 kMsgSpreadChanged = kAppMessageBase + 6;
+enum {
+	kMsgNewReading = 'newr',
+	kMsgOpen = 'open',
+	kMsgSave = 'save',
+	kMsgSettings = 'sett',
+	kMsgAPIKeyReceived = 'akrc',
+	kMsgSpreadChanged = 'spch',
+	kMsgFontSizeChanged = 'fsch'
+};
 
 class MainWindow : public BWindow {
 public:
-	MainWindow();
+		// Constructor now takes the presenter
+	MainWindow(CardPresenter* presenter);
 	virtual ~MainWindow();
 
-	void MessageReceived(BMessage* msg);
-	bool QuitRequested();
-	void FrameResized(float width, float height);
+	virtual void MessageReceived(BMessage* message);
+	virtual void FrameResized(float width, float height);
+	virtual bool QuitRequested();
 
 private:
 	void _CreateMenuBar();
 
 	BMenuBar* fMenuBar;
+	CardPresenter* fCardPresenter;
 	BFilePanel* fOpenFilePanel;
 	BFilePanel* fSaveFilePanel;
-
-	CardPresenter* fCardPresenter;
 };
+
+#endif // MAIN_WINDOW_H

@@ -13,7 +13,8 @@ class BCheckBox;
 
 const uint32 kMsgSaveAPIKey = 'SvAK';
 const uint32 kMsgLogReadingsChanged = 'LogR';
-const uint32 kMsgFontSizeChanged = 'FnSz';
+// Rename the constant to avoid conflict
+const uint32 kMsgSettingsFontSizeChanged = 'FnSz';
 
 class SettingsWindow : public BWindow {
 public:
