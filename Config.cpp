@@ -10,10 +10,10 @@
 #include <stdlib.h> // for getenv
 #include <time.h>
 
-// Static member definition
+
 BString Config::sAPIKey = "";
 SpreadType Config::sSpread = THREE_CARD;
-bool Config::sLogReadings = false; // Default to not logging readings
+bool Config::sLogReadings = false;
 float Config::sFontSize = 12.0f;
 
 // UI Constants
@@ -114,7 +114,7 @@ Config::SaveAPIKeyToFile(const BString& apiKey)
 	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
 		file.Write(apiKey.String(), apiKey.Length());
 		file.Unset();
-		// Register the file with MIME type
+
 		RegisterFileWithMime(path.Path(), "text/plain");
 	}
 }
@@ -155,7 +155,6 @@ void
 Config::SetSpread(SpreadType spread)
 {
 	sSpread = spread;
-	// Save the spread to a settings file using BMessage
 	SaveSettingsToFile();
 }
 
@@ -171,7 +170,6 @@ void
 Config::SetLogReadings(bool logReadings)
 {
 	sLogReadings = logReadings;
-	// Save the settings to a settings file using BMessage
 	SaveSettingsToFile();
 }
 
@@ -187,7 +185,6 @@ void
 Config::SetFontSize(float fontSize)
 {
 	sFontSize = fontSize;
-	// Save the settings to a settings file using BMessage
 	SaveSettingsToFile();
 }
 
@@ -226,7 +223,7 @@ Config::SaveSettingsToFile()
 	if (file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE) == B_OK) {
 		settings.Flatten(&file);
 		file.Unset();
-		// Register the file with MIME type
+
 		RegisterFileWithMime(path.Path(), "application/x-vnd.Haiku-msg");
 	}
 }
@@ -270,10 +267,8 @@ Config::RegisterFileWithMime(const char* path, const char* mimeType)
 {
 	BNode node(path);
 	if (node.InitCheck() == B_OK) {
-		// Register with the specified MIME type
 		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
 
-		// Also register with our application's signature so files open with our app
 		const char* appSig = "application/x-vnd.Ace-of-Wands";
 		node.WriteAttr("BEOS:APP_SIG", B_STRING_TYPE, 0, appSig, strlen(appSig) + 1);
 	}

@@ -2,7 +2,7 @@
 #include "CardModel.h"
 #include "CardPresenter.h"
 #include "CardView.h"
-#include "Config.h" // Include Config
+#include "Config.h"
 #include "MainWindow.h"
 #include <Application.h>
 #include <Rect.h>

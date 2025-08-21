@@ -52,8 +52,6 @@ CardView::CardView(BRect frame)
 CardView::~CardView()
 {
 	ClearCards();
-	// fReadingView is a child view and will be automatically deleted by BView's destructor
-	// delete fReadingView; // Removed to prevent double-delete
 }
 
 
@@ -65,7 +63,7 @@ CardView::MessageReceived(BMessage* message)
 		{
 			BString reading;
 			if (message->FindString("reading", &reading) == B_OK)
-				DisplayReading(reading); // Use DisplayReading to handle text update and layout
+				DisplayReading(reading);
 			break;
 		}
 		default:
@@ -79,7 +77,7 @@ void
 CardView::AttachedToWindow()
 {
 	BView::AttachedToWindow();
-	AddChild(fReadingView); // Add BTextView as a child
+	AddChild(fReadingView);
 	LayoutCards();
 	LayoutReadingArea();
 }
@@ -96,9 +94,10 @@ CardView::Draw(BRect updateRect)
 		FillRect(Bounds());
 
 		const char* message = "Choose New Reading from the Ace of Wands menu to get started";
+
 		BFont font;
 		GetFont(&font);
-		// Use the current font size instead of hardcoded value
+
 		font.SetSize(Config::GetFontSize());
 		SetFont(&font);
 
@@ -119,7 +118,7 @@ CardView::Draw(BRect updateRect)
 	// Get the scroll offset
 	BPoint scrollOffset = LeftTop();
 
-	// Define area for cards (now on the right, after the reading area)
+
 	BRect bounds = Bounds();
 	BRect cardArea(bounds.left + fReadingAreaWidth, bounds.top, bounds.right, bounds.bottom);
 
@@ -608,7 +607,3 @@ CardView::LayoutTreeOfLifeSpread()
 	fPreferredSize = bounds;
 	fPreferredSize.bottom = requiredHeight > bounds.Height() ? requiredHeight : bounds.Height();
 }
-
-
-// This function has been moved up and redefined with font scaling logic.
-// The old definition has been removed.

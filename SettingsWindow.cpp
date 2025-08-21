@@ -31,7 +31,6 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	fAPIKeyInput = new BTextControl("apiKeyInput", "API Key:", "", NULL);
 	fAPIKeyInput->TextView()->HideTyping(true); // Make it a password field
 
-	// Populate the API key field when the window is created
 	BString apiKey = Config::LoadAPIKeyFromFile();
 	fAPIKeyInput->SetText(apiKey.String());
 
@@ -73,7 +72,6 @@ SettingsWindow::SettingsWindow(BWindow* owner)
 	spreadLayout->AddView(fSpreadMenuField);
 	spreadLayout->AddView(fLogReadingsCheckbox);
 
-	// Use a BGroupLayout for a cleaner, more professional appearance
 	BGroupLayout* layout = new BGroupLayout(B_VERTICAL, B_USE_DEFAULT_SPACING);
 	this->SetLayout(layout);
 	layout->SetInsets(B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING,

@@ -16,7 +16,7 @@ enum SpreadType { THREE_CARD, TREE_OF_LIFE };
 
 class CardPresenter {
 public:
-		// Constructor now takes dependencies
+	// Constructor now takes dependencies
 	CardPresenter(CardModel* model, CardView* view);
 	~CardPresenter();
 

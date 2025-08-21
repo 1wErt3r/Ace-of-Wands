@@ -16,14 +16,13 @@
 #include <thread>
 
 
-// Constructor now takes dependencies and assumes ownership of the model
 CardPresenter::CardPresenter(CardModel* model, CardView* view)
 	:
 	fModel(model),
 	fView(view),
 	fReading(nullptr),
 	fCurrentReading(""),
-	fSpread(Config::GetSpread()) // Initialize from Config's in-memory state
+	fSpread(Config::GetSpread())
 {
 	if (fModel)
 		fModel->Initialize();
@@ -37,10 +36,8 @@ CardPresenter::~CardPresenter()
 	// Wait for any ongoing reading generation to complete
 	if (fReadingFuture.valid())
 		fReadingFuture.wait();
+
 	delete fReading;
-	// Presenter no longer owns the view, so it doesn't delete it
-	// delete fView;
-	// Presenter still owns the model
 	delete fModel;
 }
 
@@ -55,9 +52,6 @@ CardPresenter::GetView()
 void
 CardPresenter::SetView(CardView* view)
 {
-	// If there was a previous view, we should ideally remove it from its parent
-	// But for simplicity, we'll just replace the pointer
-	// The MainWindow is responsible for the lifecycle of the view
 	fView = view;
 	if (fView)
 		fView->SetSpread(fSpread);
@@ -87,19 +81,19 @@ CardPresenter::SetSpread(const BString& spreadName)
 	else if (spreadName == "Tree of Life")
 		newSpread = TREE_OF_LIFE;
 	else
-		return; // Should not happen
+		return;
 
 	fSpread = newSpread;
-	Config::SetSpread(newSpread); // Update the global in-memory configuration
-	fView->SetSpread(newSpread); // Update the view
+	Config::SetSpread(newSpread);
+	fView->SetSpread(newSpread);
 }
 
 
 void
 CardPresenter::SetFontSize(float fontSize)
 {
-	Config::SetFontSize(fontSize); // Update the global configuration
-	fView->SetFontSize(fontSize); // Update the view
+	Config::SetFontSize(fontSize);
+	fView->SetFontSize(fontSize);
 }
 
 
@@ -253,9 +247,6 @@ CardPresenter::LoadThreeCardSpread()
 
 	// Launch asynchronous task to get the reading
 	fReadingFuture = std::async(std::launch::async, [this, cards]() {
-		// Add a small delay to simulate network request
-		std::this_thread::sleep_for(std::chrono::milliseconds(Config::kAPITimeout));
-
 		BString reading;
 		if (Config::GetAPIKey().IsEmpty()) {
 			std::vector<BString> cardNames;
@@ -295,9 +286,6 @@ CardPresenter::LoadTreeOfLifeSpread()
 
 	// Launch asynchronous task to get the reading
 	fReadingFuture = std::async(std::launch::async, [this, cards]() {
-		// Add a small delay to simulate network request
-		std::this_thread::sleep_for(std::chrono::milliseconds(Config::kAPITimeout));
-
 		BString reading;
 		if (Config::GetAPIKey().IsEmpty()) {
 			std::vector<BString> cardNames;
