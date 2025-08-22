@@ -11,9 +11,9 @@
 #include <Resources.h>
 #include <String.h>
 #include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 
 CardModel::CardModel()
@@ -33,11 +33,11 @@ CardModel::Initialize()
 {
 	BResources* appResources = BApplication::AppResources();
 	if (appResources == NULL) {
-		printf("Error: appResources is NULL\n");
+		std::cout << "Error: appResources is NULL" << std::endl;
 		return B_ERROR;
 	}
 
-	printf("Scanning application resources:\n");
+	std::cout << "Scanning application resources:" << std::endl;
 	int32 count = 0;
 	type_code type;
 	int32 id;
@@ -45,15 +45,16 @@ CardModel::Initialize()
 	size_t size;
 
 	while (appResources->GetResourceInfo(count, &type, &id, &name, &size)) {
-		printf("  Resource %d: Type: %c%c%c%c, ID: %d, Name: %s, Size: %lu\n", count,
-			(char)(type >> 24), (char)(type >> 16), (char)(type >> 8), (char)type, id, name, size);
+		std::cout << "  Resource " << count << ": Type: " << (char)(type >> 24)
+				  << (char)(type >> 16) << (char)(type >> 8) << (char)type << ", ID: " << id
+				  << ", Name: " << name << ", Size: " << size << std::endl;
 
 		if (type == 'BBMP' && BString(name).IFindLast(".webp") != B_ERROR)
 			fCardResources.push_back({id, BString(name)});
 		count++;
 	}
 
-	printf("Found %lu WebP resources.\n", fCardResources.size());
+	std::cout << "Found " << fCardResources.size() << " WebP resources." << std::endl;
 
 	return fCardResources.size() > 0 ? B_OK : B_ERROR;
 }

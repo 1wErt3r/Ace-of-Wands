@@ -5,7 +5,7 @@
 #include <curl/curl.h>
 #include <json/json.h>
 
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 
@@ -67,7 +67,7 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 		   "interactions. "
 		   "Keep the response to 5-7 sentences. Do not use markdown or any special formatting.";
 
-	printf("AI Prompt: %s\n", prompt.String());
+	std::cout << "AI Prompt: " << prompt.String() << std::endl;
 
 	// Initialize curl
 	CURL* curl = curl_easy_init();

@@ -14,7 +14,7 @@
 #include <TextView.h> // Include BTextView
 #include <TranslationUtils.h>
 #include <TranslatorRoster.h>
-#include <stdio.h>
+#include <iostream>
 
 
 CardView::CardView(BRect frame)
@@ -366,7 +366,7 @@ CardView::PreferredSize()
 void
 CardView::DisplayCards(const std::vector<CardInfo>& cards)
 {
-	printf("Displaying %d cards\n", (int)cards.size());
+	std::cout << "Displaying " << cards.size() << " cards" << std::endl;
 	ClearCards();
 
 	for (int i = 0; i < cards.size(); i++) {
@@ -385,9 +385,9 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 		}
 
 		if (display.image)
-			printf("Loaded image: %d\n", cards[i].resourceID);
+			std::cout << "Loaded image: " << cards[i].resourceID << std::endl;
 		else
-			printf("Failed to load image: %d\n", cards[i].resourceID);
+			std::cout << "Failed to load image: " << cards[i].resourceID << std::endl;
 
 		fCards.push_back(display);
 	}

@@ -13,7 +13,7 @@
 #include <ScrollView.h>
 #include <String.h>
 #include <View.h>
-#include <cstdio>
+#include <iostream>
 
 
 MainWindow::MainWindow(CardPresenter* presenter)
@@ -83,7 +83,7 @@ MainWindow::MessageReceived(BMessage* message)
 			if (message->FindString("apiKey", &apiKey) == B_OK) {
 				if (fCardPresenter)
 					fCardPresenter->SetAPIKey(BString(apiKey));
-				printf("API key has been set and stored.\n");
+				std::cout << "API key has been set and stored." << std::endl;
 			}
 			break;
 		}
@@ -115,7 +115,7 @@ MainWindow::MessageReceived(BMessage* message)
 
 			BPath path(&directoryRef);
 			path.Append(name);
-			printf("Save requested to: %s\n", path.Path());
+			std::cout << "Save requested to: " << path.Path() << std::endl;
 			if (fCardPresenter)
 				fCardPresenter->SaveFile(path);
 			break;
@@ -126,7 +126,7 @@ MainWindow::MessageReceived(BMessage* message)
 			message->FindRef("refs", 0, &ref);
 
 			BPath path(&ref);
-			printf("Open requested for: %s\n", path.Path());
+			std::cout << "Open requested for: " << path.Path() << std::endl;
 			if (fCardPresenter)
 				fCardPresenter->OpenFile(path);
 			break;
