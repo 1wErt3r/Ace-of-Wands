@@ -18,6 +18,7 @@ The application can optionally provide AI-powered interpretations using the Deep
 - **Language:** C++
 - **Operating System:** Haiku OS
 - **UI Framework:** Haiku's native BApplication, BWindow, BView classes.
+- **Boost** Used for HTTP and JSON 
 
 ## Architecture (Model-View-Presenter - MVP)
 The application follows an MVP architectural pattern to separate concerns:
@@ -35,8 +36,8 @@ The application follows an MVP architectural pattern to separate concerns:
 ## Setup and Usage
 
 ### Prerequisites
--   Haiku OS development environment.
--	You need the `curl` and `jsoncpp` headers. Install with `pkgman install curl_devel jsoncpp_devel`.
+-   Haiku development environment.
+-	You need the `boost1.85` headers. Install with `pkgman install boost1.85_devel`.
 
 ### Building the Application
 The application can be built using the provided `Makefile`. Navigate to the project root directory in a Haiku terminal and run:
@@ -53,7 +54,7 @@ Run the application from the project root:
 ```
 
 ### How to Use
-1.  **New Reading:** Select "File" -> "New Reading" from the menu bar to draw a new three-card spread.
+1.  **New Reading:** Select "Ace of Wands" -> "New Reading" from the menu bar to draw a new spread. You can change the spread to either three card or Tree of Life in the settings.
 2.  **Save Reading:** Select "File" -> "Save..." to save the current spread and its reading to a text file.
 3.  **Open Reading:** Select "File" -> "Open..." to load a previously saved reading.
 
@@ -66,11 +67,9 @@ This application can optionally provide AI-generated interpretations for your ta
 -   **`Config`:** A utility class for managing application configurations, specifically retrieving the DeepSeek API key from environment variables.
 
 ### Enabling the Feature
-To enable AI-powered readings, you will need:
--   The `curl` and `jsoncpp` libraries (typically available in Haiku's package management).
--   A DeepSeek API key.
+To enable AI-powered readings, you will need a DeepSeek API key.
 
-Before running the application, you must set your DeepSeek API key as an environment variable:
+You can set the API key in the application settings or use an environment variable.
 
 ```bash
 export DEEPSEEK_API_KEY="YOUR_DEEPSEEK_API_KEY"
