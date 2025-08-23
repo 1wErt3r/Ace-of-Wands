@@ -11,8 +11,8 @@
 #include <Path.h>
 #include <View.h>
 #include <chrono>
-#include <cstdio>
 #include <ctime>
+#include <iostream>
 #include <thread>
 
 
@@ -121,7 +121,7 @@ CardPresenter::SaveFile(const BPath& path)
 	BFile file;
 	status_t status = file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 	if (status != B_OK) {
-		printf("Error creating file: %s\n", strerror(status));
+		std::cout << "Error creating file: " << strerror(status) << std::endl;
 		return;
 	}
 
@@ -141,7 +141,7 @@ CardPresenter::SaveFile(const BPath& path)
 	// Register the file with our application's MIME type
 	Config::RegisterFileWithMime(path.Path(), "application/x-vnd.Ace-of-Wands");
 
-	printf("File saved successfully to: %s\n", path.Path());
+	std::cout << "File saved successfully to: " << path.Path() << std::endl;
 }
 
 
@@ -151,7 +151,7 @@ CardPresenter::OpenFile(const BPath& path)
 	BFile file;
 	status_t status = file.SetTo(path.Path(), B_READ_ONLY);
 	if (status != B_OK) {
-		printf("Error opening file: %s\n", strerror(status));
+		std::cout << "Error opening file: " << strerror(status) << std::endl;
 		return;
 	}
 
@@ -222,13 +222,13 @@ CardPresenter::OpenFile(const BPath& path)
 	else if (spreadLine == "Tree of Life")
 		expectedCardCount = Config::kTreeOfLifeSpreadCount;
 
-	if (loadedCards.size() == expectedCardCount) {
+	if (loadedCards.size() == static_cast<size_t>(expectedCardCount)) {
 		fModel->SetCardSpread(loadedCards);
 		fView->DisplayCards(loadedCards);
 		fView->DisplayReading(aiReadingText);
 	} else {
-		printf("Error: Could not parse cards from file. Expected %d cards, found %d.\n",
-			expectedCardCount, (int)loadedCards.size());
+		std::cout << "Error: Could not parse cards from file. Expected " << expectedCardCount
+				  << " cards, found " << loadedCards.size() << "." << std::endl;
 	}
 }
 
@@ -236,10 +236,10 @@ CardPresenter::OpenFile(const BPath& path)
 void
 CardPresenter::LoadThreeCardSpread()
 {
-	printf("Loading three card spread\n");
+	std::cout << "Loading three card spread" << std::endl;
 	std::vector<CardInfo> cards;
 	fModel->GetCardSpread(cards, Config::kThreeCardSpreadCount);
-	printf("Got %d cards from model\n", (int)cards.size());
+	std::cout << "Got " << cards.size() << " cards from model" << std::endl;
 	fView->DisplayCards(cards);
 
 	// Show loading message while fetching AI reading
@@ -260,7 +260,7 @@ CardPresenter::LoadThreeCardSpread()
 		}
 
 		fCurrentReading = reading;
-		printf("Reading: %s\n", reading.String());
+		std::cout << "Reading: " << reading.String() << std::endl;
 
 		// Log the reading if enabled
 		if (Config::GetLogReadings())
@@ -275,10 +275,10 @@ CardPresenter::LoadThreeCardSpread()
 void
 CardPresenter::LoadTreeOfLifeSpread()
 {
-	printf("Loading Tree of Life spread\n");
+
 	std::vector<CardInfo> cards;
 	fModel->GetCardSpread(cards, Config::kTreeOfLifeSpreadCount);
-	printf("Got %d cards from model\n", (int)cards.size());
+
 	fView->DisplayCards(cards);
 
 	// Show loading message while fetching AI reading
@@ -299,7 +299,7 @@ CardPresenter::LoadTreeOfLifeSpread()
 		}
 
 		fCurrentReading = reading;
-		printf("Reading: %s\n", reading.String());
+
 
 		// Log the reading if enabled
 		if (Config::GetLogReadings())
@@ -335,10 +335,9 @@ CardPresenter::SaveReadingToFile(const std::vector<CardInfo>& cards, const BStri
 
 	BFile file;
 	status_t status = file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-	if (status != B_OK) {
-		printf("Error creating reading file: %s\n", strerror(status));
+	if (status != B_OK)
+
 		return;
-	}
 
 	BString content = "Tarot Reading\n";
 	content << "Date: " << ctime(&now); // ctime includes newline
@@ -358,6 +357,4 @@ CardPresenter::SaveReadingToFile(const std::vector<CardInfo>& cards, const BStri
 		const char* mimeType = "application/x-vnd.Ace-of-Wands";
 		node.WriteAttr("BEOS:TYPE", B_STRING_TYPE, 0, mimeType, strlen(mimeType) + 1);
 	}
-
-	printf("Reading saved to: %s\n", path.Path());
 }

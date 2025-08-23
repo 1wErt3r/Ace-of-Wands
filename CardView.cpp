@@ -14,7 +14,7 @@
 #include <TextView.h> // Include BTextView
 #include <TranslationUtils.h>
 #include <TranslatorRoster.h>
-#include <stdio.h>
+#include <iostream>
 
 
 CardView::CardView(BRect frame)
@@ -123,7 +123,7 @@ CardView::Draw(BRect updateRect)
 	BRect cardArea(bounds.left + fReadingAreaWidth, bounds.top, bounds.right, bounds.bottom);
 
 	// Draw cards in the card area, accounting for scroll offset
-	for (int i = 0; i < fCards.size(); i++) {
+	for (size_t i = 0; i < fCards.size(); i++) {
 		// Adjust card frame to fit within card area and account for scroll offset
 		BRect cardFrame = fCards[i].frame;
 		cardFrame.OffsetBy(-scrollOffset.x,
@@ -366,10 +366,10 @@ CardView::PreferredSize()
 void
 CardView::DisplayCards(const std::vector<CardInfo>& cards)
 {
-	printf("Displaying %d cards\n", (int)cards.size());
+	std::cout << "Displaying " << cards.size() << " cards" << std::endl;
 	ClearCards();
 
-	for (int i = 0; i < cards.size(); i++) {
+	for (size_t i = 0; i < cards.size(); i++) {
 		CardDisplay display;
 		display.displayName = cards[i].displayName;
 
@@ -385,9 +385,9 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 		}
 
 		if (display.image)
-			printf("Loaded image: %d\n", cards[i].resourceID);
+			std::cout << "Loaded image: " << cards[i].resourceID << std::endl;
 		else
-			printf("Failed to load image: %d\n", cards[i].resourceID);
+			std::cout << "Failed to load image: " << cards[i].resourceID << std::endl;
 
 		fCards.push_back(display);
 	}
@@ -426,7 +426,7 @@ CardView::UpdateReading(const BString& reading)
 void
 CardView::ClearCards()
 {
-	for (int i = 0; i < fCards.size(); i++) {
+	for (size_t i = 0; i < fCards.size(); i++) {
 		delete fCards[i].image;
 		fCards[i].image = NULL;
 	}
@@ -504,7 +504,6 @@ CardView::LayoutThreeCardSpread()
 	// Simplified responsive design - always use 3 columns for the spread
 	int cardsPerRow = fCards.size(); // Keep all cards in one row for the spread
 	float marginX = Config::kMarginX;
-	float marginY = Config::kMarginY;
 
 	// Calculate available space for cards
 	float availableWidth = cardAreaWidth - (marginX * 2);
@@ -538,7 +537,7 @@ CardView::LayoutThreeCardSpread()
 	float rowStartX = fReadingAreaWidth + (cardAreaWidth - totalRowWidth) / 2;
 	float contentStartY = (totalHeight - fCardHeight - fLabelHeight) / 2;
 
-	for (int i = 0; i < fCards.size(); i++) {
+	for (size_t i = 0; i < fCards.size(); i++) {
 		float xPosition = rowStartX + i * (fCardWidth + cardSpacing);
 		float yPosition = contentStartY;
 
@@ -558,7 +557,6 @@ CardView::LayoutTreeOfLifeSpread()
 {
 	BRect bounds = Bounds();
 	float totalWidth = bounds.Width();
-	float totalHeight = bounds.Height();
 
 	if (!fReading.IsEmpty())
 		fReadingAreaWidth = totalWidth * Config::kReadingAreaWidthRatio;
@@ -572,7 +570,6 @@ CardView::LayoutTreeOfLifeSpread()
 	float marginY = Config::kMarginY;
 
 	float availableWidth = cardAreaWidth - (marginX * 2);
-	float availableHeight = totalHeight - (marginY * 2);
 
 	fCardWidth = availableWidth / Config::kTreeOfLifeCardWidthRatio;
 	fCardHeight = fCardWidth * Config::kCardAspectRatio;

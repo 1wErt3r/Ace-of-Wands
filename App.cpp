@@ -6,6 +6,7 @@
 #include "MainWindow.h"
 #include <Application.h>
 #include <Rect.h>
+#include <iostream>
 
 
 App::App()
@@ -31,7 +32,7 @@ App::ReadyToRun()
 
 	// Load the API key from file if it exists
 	BString savedApiKey = Config::LoadAPIKeyFromFile();
-	printf("Loaded API key: %s\n", savedApiKey.String());
+	std::cout << "Loaded API key: " << savedApiKey.String() << std::endl;
 	if (!savedApiKey.IsEmpty())
 		Config::SetAPIKey(savedApiKey);
 
