@@ -222,7 +222,7 @@ CardPresenter::OpenFile(const BPath& path)
 	else if (spreadLine == "Tree of Life")
 		expectedCardCount = Config::kTreeOfLifeSpreadCount;
 
-	if (loadedCards.size() == expectedCardCount) {
+	if (loadedCards.size() == static_cast<size_t>(expectedCardCount)) {
 		fModel->SetCardSpread(loadedCards);
 		fView->DisplayCards(loadedCards);
 		fView->DisplayReading(aiReadingText);

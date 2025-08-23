@@ -70,17 +70,17 @@ CardModel::GetCardSpread(std::vector<CardInfo>& cards, int32 numCards)
 
 	cards.clear();
 
-	if (fCardResources.size() < numCards)
+	if (fCardResources.size() < static_cast<size_t>(numCards))
 		return;
 
 	// Select random cards
 	std::vector<int> selectedIndices;
-	while (selectedIndices.size() < numCards) {
+	while (selectedIndices.size() < static_cast<size_t>(numCards)) {
 		int index = rand() % fCardResources.size();
 
 		// Check if already selected
 		bool alreadySelected = false;
-		for (int i = 0; i < selectedIndices.size(); i++) {
+		for (size_t i = 0; i < selectedIndices.size(); i++) {
 			if (selectedIndices[i] == index) {
 				alreadySelected = true;
 				break;
