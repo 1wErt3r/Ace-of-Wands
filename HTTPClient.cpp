@@ -18,8 +18,9 @@ BString
 HTTPClient::Post(const BString& url, const BString& jsonData, const BString& authHeader)
 {
 	try {
-		BString host = ExtractHostFromURL(url);
-		BString target = ExtractTargetFromURL(url);
+		// Hardcoded values for the fixed DeepSeek API URL
+		BString host = "api.deepseek.com";
+		BString target = "/v1/chat/completions";
 
 		return PerformHTTPSRequest(host, target, jsonData, authHeader);
 	} catch (const std::exception& e) {
@@ -82,40 +83,4 @@ HTTPClient::PerformHTTPSRequest(const BString& host, const BString& target, cons
 		std::cout << "HTTPS request failed: " << e.what() << std::endl;
 		throw;
 	}
-}
-
-
-BString
-HTTPClient::ExtractHostFromURL(const BString& url)
-{
-	std::string urlStr(url.String());
-	size_t start = urlStr.find("://");
-	if (start == std::string::npos)
-		throw std::runtime_error("Invalid URL format");
-
-	start += 3; // Skip past "://"
-	size_t end = urlStr.find('/', start);
-
-	if (end == std::string::npos)
-		return BString(urlStr.substr(start).c_str());
-
-	return BString(urlStr.substr(start, end - start).c_str());
-}
-
-
-BString
-HTTPClient::ExtractTargetFromURL(const BString& url)
-{
-	std::string urlStr(url.String());
-	size_t start = urlStr.find("://");
-	if (start == std::string::npos)
-		throw std::runtime_error("Invalid URL format");
-
-	start += 3; // Skip past "://"
-	size_t slashPos = urlStr.find('/', start);
-
-	if (slashPos == std::string::npos)
-		return BString("/");
-
-	return BString(urlStr.substr(slashPos).c_str());
 }

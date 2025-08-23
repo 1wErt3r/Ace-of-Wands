@@ -26,7 +26,4 @@ private:
 
 	BString PerformHTTPSRequest(const BString& host, const BString& target, const BString& jsonData,
 		const BString& authHeader);
-
-	static BString ExtractHostFromURL(const BString& url);
-	static BString ExtractTargetFromURL(const BString& url);
 };
