@@ -10,7 +10,7 @@ Images are sourced from the [Internet Archive](https://archive.org/details/rider
 The application can optionally provide AI-powered interpretations using the DeepSeek API.
 
 ## Features
-- **Three-Card Spread:** Draw a random three-card tarot spread.
+- **Spreads:** Draw a random three-card or Tree of Life tarot spread.
 - **Save/Load Readings:** Save your current reading (cards and interpretation) to a file and load previous readings.
 - **Responsive User Interface:** The card display adjusts dynamically to the window size.
 
@@ -50,7 +50,7 @@ make
 Run the application from the project root:
 
 ```bash
-./AceofWands
+./aceofwands
 ```
 
 ### How to Use
