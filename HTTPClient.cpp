@@ -21,9 +21,6 @@ HTTPClient::Post(const BString& url, const BString& jsonData, const BString& aut
 		BString host = ExtractHostFromURL(url);
 		BString target = ExtractTargetFromURL(url);
 
-		std::cout << "Making HTTP request to: " << host.String() << target.String() << std::endl;
-		std::cout << "Auth header: " << authHeader.String() << std::endl;
-
 		return PerformHTTPSRequest(host, target, jsonData, authHeader);
 	} catch (const std::exception& e) {
 		BString errorMsg = "HTTP Request Error: ";

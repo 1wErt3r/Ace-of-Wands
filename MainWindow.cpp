@@ -83,7 +83,6 @@ MainWindow::MessageReceived(BMessage* message)
 			if (message->FindString("apiKey", &apiKey) == B_OK) {
 				if (fCardPresenter)
 					fCardPresenter->SetAPIKey(BString(apiKey));
-				std::cout << "API key has been set and stored." << std::endl;
 			}
 			break;
 		}
@@ -115,7 +114,7 @@ MainWindow::MessageReceived(BMessage* message)
 
 			BPath path(&directoryRef);
 			path.Append(name);
-			std::cout << "Save requested to: " << path.Path() << std::endl;
+
 			if (fCardPresenter)
 				fCardPresenter->SaveFile(path);
 			break;
@@ -126,7 +125,7 @@ MainWindow::MessageReceived(BMessage* message)
 			message->FindRef("refs", 0, &ref);
 
 			BPath path(&ref);
-			std::cout << "Open requested for: " << path.Path() << std::endl;
+
 			if (fCardPresenter)
 				fCardPresenter->OpenFile(path);
 			break;

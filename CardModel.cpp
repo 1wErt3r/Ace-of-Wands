@@ -37,7 +37,6 @@ CardModel::Initialize()
 		return B_ERROR;
 	}
 
-	std::cout << "Scanning application resources:" << std::endl;
 	int32 count = 0;
 	type_code type;
 	int32 id;
@@ -45,16 +44,10 @@ CardModel::Initialize()
 	size_t size;
 
 	while (appResources->GetResourceInfo(count, &type, &id, &name, &size)) {
-		std::cout << "  Resource " << count << ": Type: " << (char)(type >> 24)
-				  << (char)(type >> 16) << (char)(type >> 8) << (char)type << ", ID: " << id
-				  << ", Name: " << name << ", Size: " << size << std::endl;
-
 		if (type == 'BBMP' && BString(name).IFindLast(".webp") != B_ERROR)
 			fCardResources.push_back({id, BString(name)});
 		count++;
 	}
-
-	std::cout << "Found " << fCardResources.size() << " WebP resources." << std::endl;
 
 	return fCardResources.size() > 0 ? B_OK : B_ERROR;
 }

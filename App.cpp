@@ -32,7 +32,7 @@ App::ReadyToRun()
 
 	// Load the API key from file if it exists
 	BString savedApiKey = Config::LoadAPIKeyFromFile();
-	std::cout << "Loaded API key: " << savedApiKey.String() << std::endl;
+
 	if (!savedApiKey.IsEmpty())
 		Config::SetAPIKey(savedApiKey);
 

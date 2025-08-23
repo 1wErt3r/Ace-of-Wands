@@ -140,8 +140,6 @@ CardPresenter::SaveFile(const BPath& path)
 
 	// Register the file with our application's MIME type
 	Config::RegisterFileWithMime(path.Path(), "application/x-vnd.Ace-of-Wands");
-
-	std::cout << "File saved successfully to: " << path.Path() << std::endl;
 }
 
 
@@ -236,13 +234,11 @@ CardPresenter::OpenFile(const BPath& path)
 void
 CardPresenter::LoadThreeCardSpread()
 {
-	std::cout << "Loading three card spread" << std::endl;
 	std::vector<CardInfo> cards;
 	fModel->GetCardSpread(cards, Config::kThreeCardSpreadCount);
-	std::cout << "Got " << cards.size() << " cards from model" << std::endl;
+
 	fView->DisplayCards(cards);
 
-	// Show loading message while fetching AI reading
 	fView->DisplayReading("Fetching reading...");
 
 	// Launch asynchronous task to get the reading
@@ -260,7 +256,6 @@ CardPresenter::LoadThreeCardSpread()
 		}
 
 		fCurrentReading = reading;
-		std::cout << "Reading: " << reading.String() << std::endl;
 
 		// Log the reading if enabled
 		if (Config::GetLogReadings())

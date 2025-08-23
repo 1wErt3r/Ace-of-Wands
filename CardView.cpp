@@ -366,7 +366,6 @@ CardView::PreferredSize()
 void
 CardView::DisplayCards(const std::vector<CardInfo>& cards)
 {
-	std::cout << "Displaying " << cards.size() << " cards" << std::endl;
 	ClearCards();
 
 	for (size_t i = 0; i < cards.size(); i++) {
@@ -383,11 +382,6 @@ CardView::DisplayCards(const std::vector<CardInfo>& cards)
 				display.image = BTranslationUtils::GetBitmap(&stream);
 			}
 		}
-
-		if (display.image)
-			std::cout << "Loaded image: " << cards[i].resourceID << std::endl;
-		else
-			std::cout << "Failed to load image: " << cards[i].resourceID << std::endl;
 
 		fCards.push_back(display);
 	}

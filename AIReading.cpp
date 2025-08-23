@@ -56,9 +56,6 @@ AIReading::GetReading(const std::vector<CardInfo>& cards, SpreadType spreadType)
 		   "interactions. "
 		   "Keep the response to 5-7 sentences. Do not use markdown or any special formatting.";
 
-	std::cout << "AI Prompt: " << prompt.String() << std::endl;
-
-
 	BString jsonPayload
 		= JSONParser::BuildPayload(prompt, Config::kAPIMaxTokens, Config::kAPITemperature);
 

@@ -20,7 +20,7 @@ enum {
 
 class MainWindow : public BWindow {
 public:
-	// Constructor now takes the presenter
+		// Constructor now takes the presenter
 	MainWindow(CardPresenter* presenter);
 	virtual ~MainWindow();
 
